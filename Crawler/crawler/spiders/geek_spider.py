@@ -1,9 +1,17 @@
-from scrapy.spiders import CrawlSpider, Rule
+from scrapy.spiders import CrawlSpider, Rule, SitemapSpider
 from scrapy.linkextractors import LinkExtractor
 from scrapy.selector import Selector
 
 from crawler.items import BrainItemLoader, BrainItem
 
+
+class GeekSitemapSpider(SitemapSpider):
+    name = 'geek_sitemap_spider'
+
+    sitemap_urls = ['https://geekbrains.ru/robots.txt']
+
+    def parse(self, response):
+        pass
 
 class GeekSpider(CrawlSpider):
     name = 'geek_spider'
