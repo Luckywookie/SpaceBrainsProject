@@ -4,6 +4,22 @@ from scrapy.selector import Selector
 
 from crawler.items import BrainItemLoader, BrainItem
 
+import pymysql
+
+cnx = pymysql.connect(host='localhost', user='root', password='', db='ratepersons', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
+cursor = cnx.cursor()
+cursor.execute('SELECT Name FROM Sites')
+sites = []
+
+for row in cursor:
+    print(row['Name'])
+    sites.append(row['Name'])
+
+for site in sites:
+    print(site)
+
+cursor.close()
+cnx.close()
 
 class GeekSitemapSpider(SitemapSpider):
     name = 'geek_sitemap_spider'
