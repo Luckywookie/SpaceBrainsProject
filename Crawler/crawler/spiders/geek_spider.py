@@ -6,28 +6,34 @@ from crawler.items import BrainItemLoader, BrainItem
 
 import pymysql
 
-cnx = pymysql.connect(host='localhost', user='root', password='', db='ratepersons', charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
-cursor = cnx.cursor()
-cursor.execute('SELECT Name FROM Sites')
-sites = []
-
-for row in cursor:
-    print(row['Name'])
-    sites.append(row['Name'])
-
-for site in sites:
-    print(site)
-
-cursor.close()
-cnx.close()
 
 class GeekSitemapSpider(SitemapSpider):
     name = 'geek_sitemap_spider'
 
-    sitemap_urls = ['https://geekbrains.ru/robots.txt']
+    cnx = pymysql.connect(host='localhost', user='root', password='', db='ratepersons', charset='utf8mb4',
+                          cursorclass=pymysql.cursors.DictCursor)
+    cursor = cnx.cursor()
+    cursor.execute('SELECT Name FROM Sites')
+    sites = []
+
+    for row in cursor:
+        print(row['Name'])
+        sites.append('http://' + row['Name'] + '/robots.txt')
+
+    cursor.close()
+    cnx.close()
+
+    sitemap_urls = sites
 
     def parse(self, response):
-        pass
+        cnx = pymysql.connect(host='localhost', user='root', password='', db='ratepersons', charset='utf8mb4',
+                              cursorclass=pymysql.cursors.DictCursor)
+        cursor = cnx.cursor()
+        sql = 'INSERT INTO Pages (Url) VALUES ({})'.format(response.url)
+        cursor.execute(sql)
+        cnx.commit()
+        cnx.close()
+
 
 class GeekSpider(CrawlSpider):
     name = 'geek_spider'
