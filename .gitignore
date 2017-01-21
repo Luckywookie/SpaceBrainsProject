@@ -1,2 +1,7 @@
 /bin/
 /obj/
+/__pycache__/
+/.idea/
+
+*.pyc
+
