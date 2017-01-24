@@ -19,6 +19,7 @@ urls = [
     'https://lenta.ru/news/2012/05/16/devour/',
     'https://vz.ru/sitemap.xml',
 ]
+
 '''
 # Списки соответсвующие таблицам
 keywordsList = [] # Список ключевых слов
@@ -61,10 +62,22 @@ def read_sites(sitesLst):
     Читает данные по сайтам (sites)
     '''
     for item in sitesLst:
-        print(item)
         yield item
 
+
+def read_pages(pageLst):
+    '''
+    Читаем pages и находим пустую дату последнеего сканирования 'LastScanDate': None
+    '''
+    for item in pageLst:
+        if item['LastScanDate'] is None:
+            yield item['Url']
+
+
 def write_robots(sitesLst, pagesLst):
+    '''
+    Формируем лист для записи в pages ссылки на robots.txt
+    '''
     lst = []
     i = len(pagesLst)
     for x in sitesLst:
@@ -77,7 +90,7 @@ def write_robots(sitesLst, pagesLst):
             lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
         else:    
             for item in pagesLst:
-                print('SiteID: ', item['SiteID'])
+                #print('SiteID: ', item['SiteID'])
                 if item['SiteID'] == x:
                     continue
                 else:
@@ -89,22 +102,15 @@ def write_robots(sitesLst, pagesLst):
     return lst
 
 
-def read_pages(pageLst):
-    '''
-    Читает pages и находит пустую датупоследнеего сканирования 'LastScanDate': None
-    '''
-    for item in pageLst:
-        if item['LastScanDate'] is None:
-            if item['Url'].split('/')[-1] == 'robots.txt':
-                yield item['Url']
-
-
 def read_robots(file):
     r = file.split('\n')
     for x in r:
         if x.startswith('Sitemap'):
            return x.split(':', maxsplit=1)[-1].strip()
 
+
+def write_sitemap():
+    pass
 
 def read_html(url):
     pass
@@ -118,7 +124,7 @@ def sitemap(html):
         # st = [url.text for url in soup.find_all('loc')]
         # return st
 
-
+'''
 def db_write_sitemap():
     conn = pymysql.connect(
         host='localhost',
@@ -128,18 +134,19 @@ def db_write_sitemap():
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor)
     cur = conn.cursor()
-
+'''
 
 def main():
+    #Проходим по таблице sites и записываем информацию pages (robots.txt)
     lst = write_robots(read_sites(sitesList), pagesList)
-    
     pagesList.extend(lst)
     
-    print(pagesList)
+    #print(pagesList)
     
     for i in read_pages(pagesList):
-        print(i)
-        print(read_robots(get_html(i)))
+        if i.split('/')[-1] == 'robots.txt': #Определяем куда ведет ссылка
+            print(i)
+            print(read_robots(get_html(i)))
     
 
 if __name__ == '__main__':
