@@ -56,32 +56,48 @@ def get_html(url):
         return resp.status_code
 
 
-def get_url(sites):
+def read_sites(sitesLst):
     '''
-	Читает данные по сайтам (sites) и записыает строку pages
-	'''
-
+    Читает данные по сайтам (sites)
+    '''
+    for item in sitesLst:
+        print(item)
+        yield item
 
 def write_robots(sitesLst, pagesLst):
     lst = []
-    for i in sitesLst:
-        print('ID: ', i['ID'])
+    i = len(pagesLst)
+    for x in sitesLst:
+        #print('ID: ', i['ID'])
 
         if len(pagesLst) == 0:
-            print(i['Name'])
-            url = '/'.join(['https:/', i['Name'], '/robots.txt'])
-            lst.append({'ID': len(pagesLst), 'Url': url, 'SiteID': i['ID'], 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})     	
+            #print(i['Name'])
+            i += 1
+            url = '/'.join(['https:/', x['Name'], 'robots.txt'])
+            lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
         else:    
             for item in pagesLst:
                 print('SiteID: ', item['SiteID'])
-                if item['SiteID'] == i:
+                if item['SiteID'] == x:
                     continue
                 else:
-                    print(i['Name'])
-                    url = '/'.join(['https:/', i['Name'], '/robots.txt'])
-                    lst.append({'ID': len(pagesLst), 'Url': url, 'SiteID': i['ID'], 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
+                    #print(i['Name'])
+                    i += 1
+                    url = '/'.join(['https:/', x['Name'], 'robots.txt'])
+                    lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
                     print(len(pagesLst))
     return lst
+
+
+def read_pages(pageLst):
+    '''
+    Читает pages и находит пустую датупоследнеего сканирования 'LastScanDate': None
+    '''
+    for item in pageLst:
+        #print(item)
+        if item['LastScanDate'] is None:
+            if item['Url'].split('/')[-1] == 'robots.txt':
+                yield item['Url']
 
 
 def read_robots(name):
@@ -113,9 +129,17 @@ def db_write_sitemap():
 
 
 def main():
-    lst = write_robots(sitesList, pagesList)
+    #for i in read_sites(sitesList):
+    #    print(i)
+    lst = write_robots(read_sites(sitesList), pagesList)
+    
     pagesList.extend(lst)
+    
     print(pagesList)
+
+    for i in read_pages(pagesList):
+        print(i)
+        print(get_html(i))
     # print(get_html(URL))
     # for url in urls[:8]:
     #    print('headers for {}'.format(url), get_headers(url)['Content-Type'].split(';')[0])
