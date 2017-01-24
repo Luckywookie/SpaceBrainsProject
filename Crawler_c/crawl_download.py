@@ -94,14 +94,16 @@ def read_pages(pageLst):
     Читает pages и находит пустую датупоследнеего сканирования 'LastScanDate': None
     '''
     for item in pageLst:
-        #print(item)
         if item['LastScanDate'] is None:
             if item['Url'].split('/')[-1] == 'robots.txt':
                 yield item['Url']
 
 
-def read_robots(name):
-    pass
+def read_robots(file):
+    r = file.split('\n')
+    for x in r:
+        if x.startswith('Sitemap'):
+           return x.split(':', maxsplit=1)[-1].strip()
 
 
 def read_html(url):
@@ -129,27 +131,16 @@ def db_write_sitemap():
 
 
 def main():
-    #for i in read_sites(sitesList):
-    #    print(i)
     lst = write_robots(read_sites(sitesList), pagesList)
     
     pagesList.extend(lst)
     
     print(pagesList)
-
+    
     for i in read_pages(pagesList):
         print(i)
-        print(get_html(i))
-    # print(get_html(URL))
-    # for url in urls[:8]:
-    #    print('headers for {}'.format(url), get_headers(url)['Content-Type'].split(';')[0])
-    # print(sitemap(get_html(URL)))
-    # print(get_html(urls[3]))
-    # print(len(sitemap(get_html(URL))))
-    # print(len(sitemap(get_html('https://lenta.ru/article/sitemap.xml'))))
-    # print([(i, site) for i, site in enumerate(sitemap(get_html(URL)))])
-    # print(sitemap(get_content(URL)))
-
+        print(read_robots(get_html(i)))
+    
 
 if __name__ == '__main__':
     main()
