@@ -65,16 +65,18 @@ def read_sites(sitesLst):
         yield item
 
 
-def read_pages(pageLst):
+def read_pages(pageLst): #Выдает лист для обработки
+    pass
     '''
     Читаем pages и находим пустую дату последнеего сканирования 'LastScanDate': None
     '''
+    lst = [] 
     for item in pageLst:
         if item['LastScanDate'] is None:
-            yield item['Url']
+            lst.append(item)
+    return lst
 
-
-def write_robots(sitesLst, pagesLst):
+def read_pages_first(sitesLst, pagesLst):
     '''
     Формируем лист для записи в pages ссылки на robots.txt
     '''
@@ -109,8 +111,10 @@ def read_robots(file):
            return x.split(':', maxsplit=1)[-1].strip()
 
 
-def write_sitemap():
-    pass
+def write_sitemap(url, siteid, pageLst):
+    i = len(pageLst)
+    pageLst.append({'ID': i+1, 'Url': url, 'SiteID': siteid, 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
+
 
 def read_html(url):
     pass
@@ -118,11 +122,8 @@ def read_html(url):
 
 def sitemap(html):
     soup = BeautifulSoup(html, 'lxml')
-    for url in soup.find_all('loc'):
-        yield url
-
-        # st = [url.text for url in soup.find_all('loc')]
-        # return st
+    st = [url.text for url in soup.find_all('loc')]
+    return st
 
 '''
 def db_write_sitemap():
@@ -138,16 +139,21 @@ def db_write_sitemap():
 
 def main():
     #Проходим по таблице sites и записываем информацию pages (robots.txt)
-    lst = write_robots(read_sites(sitesList), pagesList)
-    pagesList.extend(lst)
+    pages = read_pages_first(read_sites(sitesList), pagesList)
+    pagesList.extend(pages)
     
     #print(pagesList)
     
     for i in read_pages(pagesList):
-        if i.split('/')[-1] == 'robots.txt': #Определяем куда ведет ссылка
+        if i['Url'].split('/')[-1] == 'robots.txt': #Определяем куда ведет ссылка
+            page = get_html(i['Url'])
+            stmapurl = read_robots(page)
+            #print(i['SiteID'])
+            #print(stmapurl)
+            write_sitemap(stmapurl, i['SiteID'], pagesList)
+            i['LastScanDate'] = datetime.datetime.now()
             print(i)
-            print(read_robots(get_html(i)))
-    
+    print(pagesList)
 
 if __name__ == '__main__':
     main()
