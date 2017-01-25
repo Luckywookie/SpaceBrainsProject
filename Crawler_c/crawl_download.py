@@ -22,12 +22,11 @@ urls = [
 
 '''
 # Списки соответсвующие таблицам
-keywordsList = [] # Список ключевых слов
+keywordsList = []  # Список ключевых слов
 sitesList = [
-	{'ID': 1, 'Name': 'lenta.ru'},
-	{'ID': 2, 'Name': 'gazeta.ru'},
+    {'ID': 1, 'Name': 'lenta.ru'},
 ]  # Список сайтов
-pagesList = [] # Список страниц
+pagesList = []  # Список страниц
 personalpagerankList = []  # Список рейтингов
 
 '''
@@ -65,15 +64,16 @@ def read_sites(sitesLst):
         yield item
 
 
-def read_pages(pageLst): #Выдает лист для обработки
+def read_pages(pageLst):  # Выдает лист для обработки
     '''
     Читаем pages и находим пустую дату последнеего сканирования 'LastScanDate': None
     '''
-    lst = [] 
+    lst = []
     for item in pageLst:
         if item['LastScanDate'] is None:
             lst.append(item)
     return lst
+
 
 def read_pages_first(sitesLst, pagesLst):
     '''
@@ -82,23 +82,25 @@ def read_pages_first(sitesLst, pagesLst):
     lst = []
     i = len(pagesLst)
     for x in sitesLst:
-        #print('ID: ', i['ID'])
+        # print('ID: ', i['ID'])
 
         if len(pagesLst) == 0:
-            #print(i['Name'])
+            # print(i['Name'])
             i += 1
             url = '/'.join(['https:/', x['Name'], 'robots.txt'])
-            lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
-        else:    
+            lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(),
+                        'LastScanDate': None})
+        else:
             for item in pagesLst:
-                #print('SiteID: ', item['SiteID'])
+                # print('SiteID: ', item['SiteID'])
                 if item['SiteID'] == x:
                     continue
                 else:
-                    #print(i['Name'])
+                    # print(i['Name'])
                     i += 1
                     url = '/'.join(['https:/', x['Name'], 'robots.txt'])
-                    lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
+                    lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(),
+                                'LastScanDate': None})
                     print(len(pagesLst))
     return lst
 
@@ -107,12 +109,13 @@ def read_robots(file):
     r = file.split('\n')
     for x in r:
         if x.startswith('Sitemap'):
-           return x.split(':', maxsplit=1)[-1].strip()
+            return x.split(':', maxsplit=1)[-1].strip()
 
 
 def write_sitemap(url, siteid, pageLst):
     i = len(pageLst)
-    pageLst.append({'ID': i+1, 'Url': url, 'SiteID': siteid, 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
+    pageLst.append(
+        {'ID': i + 1, 'Url': url, 'SiteID': siteid, 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
 
 
 def read_html(url):
@@ -124,8 +127,35 @@ def sitemap(html):
     st = [url.text for url in soup.find_all('loc')]
     return st
 
-'''
-def db_write_sitemap():
+
+def db_read_pages_first(sitesLst, pagesLst):
+    lst = []
+    i = len(pagesLst)
+    for x in sitesLst:
+        # print('ID: ', i['ID'])
+
+        if len(pagesLst) == 0:
+            # print(i['Name'])
+            i += 1
+            url = '/'.join(['https:/', x['Name'], 'robots.txt'])
+            lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(),
+                        'LastScanDate': None})
+        else:
+            for item in pagesLst:
+                # print('SiteID: ', item['SiteID'])
+                if item['SiteID'] == x:
+                    continue
+                else:
+                    # print(i['Name'])
+                    i += 1
+                    url = '/'.join(['https:/', x['Name'], 'robots.txt'])
+                    lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(),
+                                'LastScanDate': None})
+                    print(len(pagesLst))
+    return lst
+
+
+def db_connect():
     conn = pymysql.connect(
         host='localhost',
         user='root',
@@ -134,34 +164,62 @@ def db_write_sitemap():
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor)
     cur = conn.cursor()
-'''
+    return cur
+
 
 def main():
-    #Проходим по таблице sites и записываем информацию pages (robots.txt)
+    # Проходим по таблице sites и записываем информацию pages (robots.txt)
+    '''
+    cur = db_connect()
+
+    cur.execute('select * from pages')
+    result = cur.fetchall()
+    print(result)
+    '''
+
     pages = read_pages_first(read_sites(sitesList), pagesList)
     pagesList.extend(pages)
-    
-    #print(read_pages(pagesList))
-    
-    for i in read_pages(pagesList):
-        if i['Url'].split('/')[-1] == 'robots.txt': #Определяем куда ведет ссылка
-            page = get_html(i['Url'])
-            stmapurl = read_robots(page)
-            #print(i['SiteID'])
-            #print(stmapurl)
-            write_sitemap(stmapurl, i['SiteID'], pagesList)
-            i['LastScanDate'] = datetime.datetime.now()
-            #print(i)
+
+    # print(read_pages(pagesList))
+    p = len(read_pages(pagesList))
+    print('pages : ', p)
 
     for i in read_pages(pagesList):
-        print(i)
-        if i['Url'].split('/')[-1] == 'sitemap.xml':
+        if i['Url'].split('/')[-1].endswith('.txt'):  # Определяем куда ведет ссылка
             page = get_html(i['Url'])
-            sitemappage = sitemap(page)
-            for x in sitemappage:
-                write_sitemap(x, i['SiteID'], pagesList)
+            stmapurl = read_robots(page)
+            write_sitemap(stmapurl, i['SiteID'], pagesList)
             i['LastScanDate'] = datetime.datetime.now()
-            print(i)
+
+    p = len(read_pages(pagesList))
+    ask = True
+
+    while ask:
+        input('????->')
+        if ask and p != 0:
+            for i in read_pages(pagesList):
+                print(i)
+                if i['Url'].split('/')[-1].endswith('.xml') or i['Url'].split('/')[-1].endswith('.xml.gz'):
+                    page = get_html(i['Url'])
+                    try:
+                        sitemappage = sitemap(page)
+                    except TypeError:
+                        i['LastScanDate'] = datetime.datetime.now()
+                        print(i)
+                        continue
+                    print(len(sitemappage))
+                    for x in sitemappage:
+                        write_sitemap(x, i['SiteID'], pagesList)
+                    i['LastScanDate'] = datetime.datetime.now()
+                else:
+                    ask = False
+                print(i)
+        p = len(read_pages(pagesList))
+        print('pages : ', p)
+        print(ask)
+    p = len(read_pages(pagesList))
+    print('pages : ', p)
+    print(pagesList)
 
 
 if __name__ == '__main__':
