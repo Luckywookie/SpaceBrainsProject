@@ -66,7 +66,6 @@ def read_sites(sitesLst):
 
 
 def read_pages(pageLst): #Выдает лист для обработки
-    pass
     '''
     Читаем pages и находим пустую дату последнеего сканирования 'LastScanDate': None
     '''
@@ -142,7 +141,7 @@ def main():
     pages = read_pages_first(read_sites(sitesList), pagesList)
     pagesList.extend(pages)
     
-    #print(pagesList)
+    #print(read_pages(pagesList))
     
     for i in read_pages(pagesList):
         if i['Url'].split('/')[-1] == 'robots.txt': #Определяем куда ведет ссылка
@@ -152,8 +151,18 @@ def main():
             #print(stmapurl)
             write_sitemap(stmapurl, i['SiteID'], pagesList)
             i['LastScanDate'] = datetime.datetime.now()
+            #print(i)
+
+    for i in read_pages(pagesList):
+        print(i)
+        if i['Url'].split('/')[-1] == 'sitemap.xml':
+            page = get_html(i['Url'])
+            sitemappage = sitemap(page)
+            for x in sitemappage:
+                write_sitemap(x, i['SiteID'], pagesList)
+            i['LastScanDate'] = datetime.datetime.now()
             print(i)
-    print(pagesList)
+
 
 if __name__ == '__main__':
     main()
