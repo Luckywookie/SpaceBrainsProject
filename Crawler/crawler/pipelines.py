@@ -5,8 +5,8 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-import json
-import codecs
+# import json
+# import codecs
 
 # import sys
 # import MySQLdb
@@ -20,18 +20,20 @@ import codecs
 # from scrapy.exceptions import DropItem
 # from twisted.enterprise import adbapi
 
+
 class JsonWriterPipeline(object):
+    pass
 
-    def open_spider(self, spider):
-        self.file = open('geekbrains.json', 'w', encoding='utf-8')
-
-    def close_spider(self, spider):
-        self.file.close()
-
-    def process_item(self, spider, item):
-        line = json.dumps(dict(item), ensure_ascii=False) + "\n"
-        self.file.write(line)
-        return item
+    # def open_spider(self, spider):
+    #     self.file = open('geekbrains.json', 'w', encoding='utf-8')
+    #
+    # def close_spider(self, spider):
+    #     self.file.close()
+    #
+    # def process_item(self, spider, item):
+    #     line = json.dumps(dict(item), ensure_ascii=False) + "\n"
+    #     self.file.write(line)
+    #     return item
 
 # class MySQLStorePipeline(object):
 #     def __init__(self):

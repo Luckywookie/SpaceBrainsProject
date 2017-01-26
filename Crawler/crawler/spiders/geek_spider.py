@@ -1,43 +1,57 @@
-from scrapy.spiders import CrawlSpider, Rule, SitemapSpider
-from scrapy.linkextractors import LinkExtractor
-from scrapy.selector import Selector
+from scrapy.spiders import SitemapSpider
 
-from crawler.items import BrainItemLoader, BrainItem
+# from scrapy.spiders import CrawlSpider, Rule, SitemapSpider
+# from scrapy.linkextractors import LinkExtractor
+# from scrapy.selector import Selector
+#
+# from crawler.items import BrainItemLoader, BrainItem
 
 import pymysql
 
 from urllib.parse import *
 
+db = pymysql.connect(host='localhost', user='root', password='',
+                     db='ratepersons', charset='utf8mb4',
+                     cursorclass=pymysql.cursors.DictCursor)
+cursor = db.cursor()
+
+sitemaps = []
+site_ids = {}
+
+cursor.execute('SELECT * FROM Sites')
+
+for row in cursor:
+    print('Site: {}\nSite ID: {}'.format(row['Name'], row['ID']))
+    sitemap_url = urlunparse(('http', row['Name'], '/robots.txt', '', '', ''))
+    site_ids[row['Name']] = row['ID']
+    sitemaps.append(sitemap_url)
+    print('Sitemap URL: ' + sitemap_url)
+
+print(site_ids)
+print(sitemaps)
+
+cursor.close()
+db.close()
+
 
 class GeekSitemapSpider(SitemapSpider):
     name = 'geek_sitemap_spider'
 
-    cnx = pymysql.connect(host='localhost', user='root', password='', db='ratepersons', charset='utf8mb4',
-                          cursorclass=pymysql.cursors.DictCursor)
-    cursor = cnx.cursor()
-    cursor.execute('SELECT Name FROM Sites')
-    sites = []
-
-    for row in cursor:
-        print(row['Name'])
-        sites.append('http://' + row['Name'] + '/robots.txt')
-        s = urlparse('//' + row['Name'], scheme='http')
-        print(s.geturl())
-
-    cursor.close()
-    cnx.close()
-
-    sitemap_urls = sites
+    sitemap_urls = sitemaps
 
     def parse(self, response):
-        # cnx = pymysql.connect(host='localhost', user='root', password='', db='ratepersons', charset='utf8mb4',
-        #                       cursorclass=pymysql.cursors.DictCursor)
-        # cursor = cnx.cursor()
-        # sql = 'INSERT INTO Pages (Url) VALUES ({})'.format(response.url)
-        # cursor.execute(sql)
-        # cnx.commit()
-        # cnx.close()
-        pass
+        url = urlparse(response.url)
+        site_id = site_ids[url.netloc]
+        print(response.url)
+        print(site_ids[url.netloc])
+        db = pymysql.connect(host='localhost', user='root', password='',
+                             db='ratepersons', charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
+        cursor = db.cursor()
+        sql = 'INSERT INTO Pages (Url, SiteID) VALUES (%s, %s)'
+        cursor.execute(sql, (response.url, site_id))
+        db.commit()
+        db.close()
 
 
 # class GeekSpider(CrawlSpider):
