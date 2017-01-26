@@ -9,46 +9,49 @@ from datetime import datetime
 import pymysql
 from urllib.parse import *
 
-db_setup = pymysql.connect(host='localhost', user='root', password='',
-                           db='ratepersons', charset='utf8mb4',
-                           cursorclass=pymysql.cursors.DictCursor)
-sql_command = db_setup.cursor()
-
 sitemaps = []
 site_ids = {}
 explored_sites = set()
 
-sql_command.execute('SELECT * FROM Sites')
-for site in sql_command:
-    print('Site: {}\nSite ID: {}'.format(site['Name'], site['ID']))
-    sitemap_url = urlunparse(('https', site['Name'], '/sitemap.xml', '', '', ''))
-    site_ids[site['Name']] = site['ID']
-    sitemaps.append(sitemap_url)
-    print('Sitemap URL: ' + sitemap_url)
 
-print(site_ids)
-print(sitemaps)
+def get_sites():
+    db_setup = pymysql.connect(host='localhost', user='root', password='',
+                               db='ratepersons', charset='utf8mb4',
+                               cursorclass=pymysql.cursors.DictCursor)
+    sql_command = db_setup.cursor()
 
-sql_command.execute('SELECT * FROM Pages')
-for page in sql_command:
-    explored_sites.add(page['SiteID'])
+    sql_command.execute('SELECT * FROM Sites')
+    for site in sql_command:
+        print('Site: {}\nSite ID: {}'.format(site['Name'], site['ID']))
+        sitemap_url = urlunparse(('https', site['Name'], '/robots.txt', '', '', ''))
+        site_ids[site['Name']] = site['ID']
+        sitemaps.append(sitemap_url)
+        print('Sitemap URL: ' + sitemap_url)
 
-print(explored_sites)
+    print(site_ids)
+    print(sitemaps)
 
-for site_name in site_ids:
-    if site_ids[site_name] not in explored_sites:
-        robot = urlunparse(('https', site_name, '/robots.txt', '', '', ''))
-        query = 'INSERT INTO Pages (Url, SiteID, FoundDateTime, LastScanDate) VALUES (%s, %s, %s, null)'
-        sql_command.execute(query, (robot, site_ids[site_name], datetime.today().strftime("%d/%m/%y %H:%M")))
-        explored_sites.add(site_ids[site_name])
-        db_setup.commit()
+    sql_command.execute('SELECT * FROM Pages')
+    for page in sql_command:
+        explored_sites.add(page['SiteID'])
 
-sql_command.close()
-db_setup.close()
+    print(explored_sites)
+
+    for site_name in site_ids:
+        if site_ids[site_name] not in explored_sites:
+            robot = urlunparse(('https', site_name, '/robots.txt', '', '', ''))
+            query = 'INSERT INTO Pages (Url, SiteID, FoundDateTime, LastScanDate) VALUES (%s, %s, %s, null)'
+            sql_command.execute(query, (robot, site_ids[site_name], datetime.today().strftime("%d/%m/%y %H:%M")))
+            explored_sites.add(site_ids[site_name])
+            db_setup.commit()
+
+    sql_command.close()
+    db_setup.close()
 
 
 class GeekSitemapSpider(SitemapSpider):
     name = 'geek_sitemap_spider'
+    get_sites()
 
     sitemap_urls = sitemaps
     sitemap_follow = []
@@ -56,8 +59,7 @@ class GeekSitemapSpider(SitemapSpider):
     def parse(self, response):
         url = urlparse(response.url)
         site_id = site_ids[url.netloc]
-        print(response.url)
-        print(site_ids[url.netloc])
+        print(url)
         db = pymysql.connect(host='localhost', user='root', password='',
                              db='ratepersons', charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
@@ -66,7 +68,6 @@ class GeekSitemapSpider(SitemapSpider):
         cursor.execute(sql, (url.geturl(), site_id, datetime.today().strftime("%d/%m/%y %H:%M")))
         db.commit()
         db.close()
-
 
 # class GeekSpider(CrawlSpider):
 #     name = 'geek_spider'
