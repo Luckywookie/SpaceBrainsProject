@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `ratepersons`.`Pages` (
   `LastScanDate` DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (`ID`),
   CONSTRAINT `FK_sites_pages`
-    FOREIGN KEY (`ID`)
+    FOREIGN KEY (`SiteID`)
     REFERENCES `ratepersons`.`Sites` (`ID`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
@@ -128,6 +128,5 @@ INSERT INTO `keywords` (`Name`, `PersonID`) VALUES ('Путину', 1);
 INSERT INTO `keywords` (`Name`, `PersonID`) VALUES ('Путиным', 1);
 INSERT INTO `keywords` (`Name`, `PersonID`) VALUES ('Путине', 1);
 INSERT INTO `sites` (`Name`) VALUES ('lenta.ru');
-INSERT INTO `pages` (`Url`, `SiteID`) VALUES ('http://lenta.ru/robots.txt', 1);
-INSERT INTO `personpagerank` (`PersonID`, `PageID`, `Rank`) VALUES (1, 1, 10);
+INSERT INTO `sites` (`Name`) VALUES ('geekbrains.ru');
 -- end attached script 'script'
