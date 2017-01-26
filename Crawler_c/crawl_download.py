@@ -22,7 +22,11 @@ urls = [
 
 '''
 # Списки соответсвующие таблицам
-personsList = [{'ID': 1, 'Name': 'Путин'}]
+personsList = [
+    {'ID': 1, 'Name': 'Путин'},
+    {'ID': 2, 'Name': 'Медведев'},
+]
+
 keywordsList = [
     {'ID': 1, 'Name': 'Путин', 'PersonID': 1},
     {'ID': 2, 'Name': 'Путину', 'PersonID': 1},
@@ -69,8 +73,24 @@ def read_sites(sitesLst):
     for item in sitesLst:
         yield item
 
-def read_keywords():
-	pass
+
+def read_person(personsLst: object) -> object:
+	'''
+	Читаем персону из списка персон
+	'''
+	for item in personsLst:
+		yield item
+
+
+def read_keywords(person):
+    '''
+    Формируем списко ключевых слов для поиску по персоне.
+    '''		
+    lst = []
+    for keyword in keywordsList:
+        if keyword['PersonID'] == person['ID']:
+            lst.append(keyword['Name'])
+    return lst
 
 
 def read_pages(pageLst):  # Выдает лист для обработки
@@ -179,12 +199,20 @@ def db_connect():
 def main():
     # Проходим по таблице sites и записываем информацию pages (robots.txt)
     '''
+    for item in read_person(personsList):
+        print(item)
+        kw = read_keywords(item)
+        print(kw)
+
+    
+    
+    '''
     cur = db_connect()
 
     cur.execute('select * from pages')
     result = cur.fetchall()
     print(result)
-    '''
+    
 
     pages = read_pages_first(read_sites(sitesList), pagesList)
     pagesList.extend(pages)
@@ -230,7 +258,7 @@ def main():
     p = len(read_pages(pagesList))
     print('pages : ', p)
     print(len(pagesList))
-
+    
 
 
 if __name__ == '__main__':
