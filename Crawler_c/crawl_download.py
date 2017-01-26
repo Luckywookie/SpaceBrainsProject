@@ -4,23 +4,7 @@ import gzip
 import pymysql
 import datetime
 
-URL = 'https://lenta.ru/robots.txt'
 
-'''
-urls = [
-    'https://lenta.ru/robots.txt',
-    'https://gazeta.ru/robots.txt',
-    'https://bfm.ru/robots.txt',
-    'https://vz.ru/robots.txt',
-    'https://lenta.ru/sitemap.xml',
-    'https://lenta.ru/news/sitemap2.xml.gz',
-    'https://gazeta.ru/sitemap.xml',
-    'https://bfm.ru/sitemap.xml',
-    'https://lenta.ru/news/2012/05/16/devour/',
-    'https://vz.ru/sitemap.xml',
-]
-
-'''
 # Списки соответсвующие таблицам
 personsList = [
     {'ID': 1, 'Name': 'Путин'},
@@ -34,7 +18,7 @@ keywordsList = [
     {'ID': 4, 'Name': 'Путиным', 'PersonID': 1},
 ]  # Список ключевых слов
 sitesList = [
-    {'ID': 1, 'Name': 'lenta.ru'},
+    {'ID': 1, 'Name': 'geekbrains.ru'},
 ]  # Список сайтов
 pagesList = []  # Список страниц
 personalpagerankList = []  # Список рейтингов
@@ -46,7 +30,7 @@ sitesDict = {'ID': 1, 'Name': 'lenta.ru'}
 sitesDict = {'ID': None, 'Name': None}  # Cтруктура ID -> int, Name -> str
 pagesDict = {'ID': None, 'Url': None, 'SiteID': None, 'FoundDateTime': None,
              'LastScanDate': None}  # Структура ID -> int, Url -> str, Siteid -> int, FoundDateTime -> datetime, LastScanDate-> datetime
-personalpagerankDict = {'ID': None, 'PageID': None,
+personalpagerankDict = {'PersonID': None, 'PageID': None,
                         'Rank': None}  # Структура PersonID -> int, PageID -> int, Rank -> int
 '''
 
@@ -56,11 +40,13 @@ def get_html(url):
     Скачивает страницу по заданному адресу (url)
     '''
     resp = requests.get(url)
+    #print(resp.encoding)
     head = resp.headers
     if resp.status_code == requests.codes.ok:
         if head['Content-Type'] == 'application/octet-stream':
             return gzip.decompress(resp.content)
         else:
+            #print(resp.text)
             return resp.text
     else:
         return resp.status_code
@@ -74,12 +60,12 @@ def read_sites(sitesLst):
         yield item
 
 
-def read_person(personsLst: object) -> object:
-	'''
-	Читаем персону из списка персон
-	'''
-	for item in personsLst:
-		yield item
+def read_person(personsLst):
+    '''
+    Читаем персону из списка персон
+    '''
+    for item in personsLst:
+        yield item
 
 
 def read_keywords(person):
@@ -147,8 +133,28 @@ def write_sitemap(url, siteid, pageLst):
         {'ID': i + 1, 'Url': url, 'SiteID': siteid, 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
 
 
-def read_html(url):
-    pass
+def read_html_to_stat(page):
+    '''
+    Читает страницу и просматривет ее на наличие ключевых слов
+    '''
+    soup = BeautifulSoup(page, 'lxml')
+    #print(soup.get_text())
+    text = soup.get_text()
+#    lst = []
+
+#    for item in read_person(personsList):
+#        print(item)
+#        kw = read_keywords(item)
+#        print(kw)
+#        for k in kw:
+#            lst.append((text.count(k), k))
+#    print(lst)
+#    s = sum([x[0] for x in lst])
+#    print(s)
+    
+#    personalpagerankList.append({'PersonID': item['ID'], 'SiteID': siteid, 'Rank': })
+
+    return text
 
 
 def sitemap(html):
@@ -199,20 +205,12 @@ def db_connect():
 def main():
     # Проходим по таблице sites и записываем информацию pages (robots.txt)
     '''
-    for item in read_person(personsList):
-        print(item)
-        kw = read_keywords(item)
-        print(kw)
-
-    
-    
-    '''
     cur = db_connect()
 
     cur.execute('select * from pages')
     result = cur.fetchall()
     print(result)
-    
+    '''
 
     pages = read_pages_first(read_sites(sitesList), pagesList)
     pagesList.extend(pages)
@@ -221,6 +219,8 @@ def main():
     p = len(read_pages(pagesList))
     print('pages : ', p)
 
+    #Находим sitemap и хаписываем ссылку в pagesList
+    print('Записываем sitemap в PAGES')
     for i in read_pages(pagesList):
         if i['Url'].split('/')[-1].endswith('.txt'):  # Определяем куда ведет ссылка
             page = get_html(i['Url'])
@@ -230,12 +230,13 @@ def main():
 
     p = len(read_pages(pagesList))
     ask = True
-
+    print('Читаем sitemap и записываем ссылки в pages')
+    #Находми ссылки на странички
     while ask:
-        input('????->')
+        #input('????->')
         if ask and p != 0:
             for i in read_pages(pagesList):
-                print(i)
+                #print(i)
                 if i['Url'].split('/')[-1].endswith('.xml') or i['Url'].split('/')[-1].endswith('.xml.gz'):
                     page = get_html(i['Url'])
                     try:
@@ -250,16 +251,40 @@ def main():
                     i['LastScanDate'] = datetime.datetime.now()
                 else:
                     ask = False
-                print(i)
-        p = len(read_pages(pagesList))
-        print('pages : ', p)
-        print(ask)
-    print(ask) 
-    p = len(read_pages(pagesList))
-    print('pages : ', p)
-    print(len(pagesList))
+                #print(i)
+        #p = len(read_pages(pagesList))
+        #print('pages : ', p)
+        #print(ask)
+    #print(ask) 
+    #p = len(read_pages(pagesList))
+    #print('pages : ', p)
+    #print(len(pagesList))
     
 
+    #Проходим по полученным ссылкам и подсчитываем статитстику
+    pages = read_pages(pagesList)
+    print('Считаем статитстику')
+    print(len(pages))
+    for p in pages:
+        page = read_html_to_stat(get_html(p['Url']))
+        print(page)
+    
+    #page = get_html('https://lenta.ru/news/2017/01/26/peregovoru_tramp_putin/')
+    #print(read_html_to_stat(page))
+        for item in read_person(personsList):
+            lst = []
+            print(item)
+            kw = read_keywords(item)
+            print(kw)
+            for k in kw:
+                lst.append((page.count(k), k))
+            print(lst)
+            s = sum([x[0] for x in lst])
+            print(s)
+            personalpagerankList.append({'PersonID': item['ID'], 'PageID': p['ID'], 'Rank': s})
+            p['LastScanDate'] = datetime.datetime.now()
+
+    print(personalpagerankList)
 
 if __name__ == '__main__':
     main()
