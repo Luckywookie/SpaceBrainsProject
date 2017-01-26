@@ -1,0 +1,17 @@
+﻿@model IEnumerable<WebAI.Models.Person>
+@{
+    ViewBag.Title = "Person";
+}
+
+<h3> Справочник "Личности"</h3>
+<p>Для редактирования и удаления записи - нажмите на неё</p>
+
+<div class="list-group">
+
+        @foreach (var person in Model)
+            {
+			<a href="#" class="list-group-item">@person.Name</a>
+            }
+</div>
+
+<button class="btn btn-info">Добавить новую запись</button>

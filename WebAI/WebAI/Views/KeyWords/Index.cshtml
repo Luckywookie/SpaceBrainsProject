@@ -1,0 +1,17 @@
+﻿@model IEnumerable<WebAI.Models.KeyWord>
+@{
+    ViewBag.Title = "KeyWord";
+}
+
+<h3> Справочник "Ключевые Слова"</h3>
+<p>Для редактирования и удаления записи - нажмите на неё</p>
+
+<div class="list-group">
+
+        	@foreach (var keyWord in Model)
+            {
+				<a href="#" class="list-group-item">@keyWord.Name</a>
+			}
+</div>
+
+<button class="btn btn-info">Добавить новую запись</button>
