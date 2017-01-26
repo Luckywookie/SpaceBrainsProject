@@ -22,7 +22,13 @@ urls = [
 
 '''
 # Списки соответсвующие таблицам
-keywordsList = []  # Список ключевых слов
+personsList = [{'ID': 1, 'Name': 'Путин'}]
+keywordsList = [
+    {'ID': 1, 'Name': 'Путин', 'PersonID': 1},
+    {'ID': 2, 'Name': 'Путину', 'PersonID': 1},
+    {'ID': 3, 'Name': 'Путина', 'PersonID': 1},
+    {'ID': 4, 'Name': 'Путиным', 'PersonID': 1},
+]  # Список ключевых слов
 sitesList = [
     {'ID': 1, 'Name': 'lenta.ru'},
 ]  # Список сайтов
@@ -62,6 +68,9 @@ def read_sites(sitesLst):
     '''
     for item in sitesLst:
         yield item
+
+def read_keywords():
+	pass
 
 
 def read_pages(pageLst):  # Выдает лист для обработки
@@ -217,9 +226,11 @@ def main():
         p = len(read_pages(pagesList))
         print('pages : ', p)
         print(ask)
+    print(ask) 
     p = len(read_pages(pagesList))
     print('pages : ', p)
-    print(pagesList)
+    print(len(pagesList))
+
 
 
 if __name__ == '__main__':
