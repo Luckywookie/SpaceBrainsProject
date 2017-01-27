@@ -128,7 +128,7 @@ def main():
     cn = db_connect()
     cur = cn.cursor()
 
-    '''
+    
     cur.execute('select * from Sites')
     sitesListDB = cur.fetchall()
     cur.execute('select * from Pages')
@@ -203,7 +203,7 @@ def main():
     cur.execute('select * from Pages')
     pagesListDB = cur.fetchall()
     print('pages : ', len(pagesListDB))
-    '''
+
 
     #Проходим по полученным ссылкам и подсчитываем статитстику
 
