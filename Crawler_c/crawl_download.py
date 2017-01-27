@@ -263,6 +263,38 @@ def main():
     pagesListDB = cur.fetchall()
     print('pages : ', len(pagesListDB))
 
+    i = 0
+    ask = True
+    print('Читаем sitemap и записываем ссылки в pages')
+    #Находми ссылки на странички
+    while ask:
+        input('????->')
+        i +=1
+        p = db_read_pages(cur)
+        print(len(p), 'C -> ', i)
+        if ask and len(p) != 0:
+            for item in p:
+                print(item)
+                if item['Url'].split('/')[-1].endswith('.xml') or item['Url'].split('/')[-1].endswith('.xml.gz'):
+                    page = get_html(item['Url'])
+                    try:
+                        sitemappage = sitemap(page)
+                    except TypeError:
+                        sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
+                        t = (datetime.datetime.now(), item['ID'])
+                        cur.execute(sql, t)
+                        print(item)
+                        continue
+                    print('sitemap -> ', len(sitemappage))
+                    for x in sitemappage:
+                        db_write_sitemap(cur, x, item['SiteID'])
+                        sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
+                        t = (datetime.datetime.now(), item['ID'])
+                        cur.execute(sql, t)
+                else:
+                    ask = False
+    cn.commit()
+
     '''
     p = len(read_pages(pagesList))
     ask = True
