@@ -3,7 +3,7 @@ import requests
 import gzip
 import pymysql
 import datetime
-
+#import sqlite3
 
 # Списки соответсвующие таблицам
 personsList = [
@@ -16,6 +16,7 @@ keywordsList = [
     {'ID': 2, 'Name': 'Путину', 'PersonID': 1},
     {'ID': 3, 'Name': 'Путина', 'PersonID': 1},
     {'ID': 4, 'Name': 'Путиным', 'PersonID': 1},
+    {'ID': 5, 'Name': 'Медведев', 'PersonID': 2},
 ]  # Список ключевых слов
 sitesList = [
     {'ID': 1, 'Name': 'geekbrains.ru'},
@@ -57,7 +58,7 @@ def read_sites(sitesLst):
     Читает данные по сайтам (sites)
     '''
     for item in sitesLst:
-        yield item
+        return item
 
 
 def read_person(personsLst):
@@ -71,7 +72,7 @@ def read_person(personsLst):
 def read_keywords(person):
     '''
     Формируем списко ключевых слов для поиску по персоне.
-    '''		
+    '''
     lst = []
     for keyword in keywordsList:
         if keyword['PersonID'] == person['ID']:
@@ -90,24 +91,32 @@ def read_pages(pageLst):  # Выдает лист для обработки
     return lst
 
 
+def db_read_pages(cur):  # Выдает лист для обработки
+    '''
+    Читаем pages и находим пустую дату последнеего сканирования 'LastScanDate': None
+    '''
+    sql = "select * from `Pages` where `Pages`.`LastScanDate` is null"
+    cur.execute(sql)
+    result = cur.fetchall()
+    return result
+
+
 def read_pages_first(sitesLst, pagesLst):
     '''
     Формируем лист для записи в pages ссылки на robots.txt
     '''
     lst = []
     i = len(pagesLst)
-    for x in sitesLst:
-        # print('ID: ', i['ID'])
-
-        if len(pagesLst) == 0:
-            # print(i['Name'])
+    if len(pagesLst) == 0:
+        for x in sitesLst:
             i += 1
             url = '/'.join(['https:/', x['Name'], 'robots.txt'])
             lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(),
                         'LastScanDate': None})
-        else:
+    else:
+        for x in sitesLst:
             for item in pagesLst:
-                # print('SiteID: ', item['SiteID'])
+        # print('SiteID: ', item['SiteID'])
                 if item['SiteID'] == x:
                     continue
                 else:
@@ -115,9 +124,10 @@ def read_pages_first(sitesLst, pagesLst):
                     i += 1
                     url = '/'.join(['https:/', x['Name'], 'robots.txt'])
                     lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(),
-                                'LastScanDate': None})
+                            'LastScanDate': None})
                     print(len(pagesLst))
     return lst
+
 
 
 def read_robots(file):
@@ -133,6 +143,11 @@ def write_sitemap(url, siteid, pageLst):
         {'ID': i + 1, 'Url': url, 'SiteID': siteid, 'FoundDateTime': datetime.datetime.now(), 'LastScanDate': None})
 
 
+def db_write_sitemap(cur, url, siteid):
+    sql = "insert into `Pages` (Url, SiteID, FoundDateTime) values (%s, %s, %s) "
+    cur.execute(sql, (url, siteid, datetime.datetime.now()))
+
+
 def read_html_to_stat(page):
     '''
     Читает страницу и просматривет ее на наличие ключевых слов
@@ -140,19 +155,7 @@ def read_html_to_stat(page):
     soup = BeautifulSoup(page, 'lxml')
     #print(soup.get_text())
     text = soup.get_text()
-#    lst = []
 
-#    for item in read_person(personsList):
-#        print(item)
-#        kw = read_keywords(item)
-#        print(kw)
-#        for k in kw:
-#            lst.append((text.count(k), k))
-#    print(lst)
-#    s = sum([x[0] for x in lst])
-#    print(s)
-    
-#    personalpagerankList.append({'PersonID': item['ID'], 'SiteID': siteid, 'Rank': })
 
     return text
 
@@ -166,18 +169,16 @@ def sitemap(html):
 def db_read_pages_first(sitesLst, pagesLst):
     lst = []
     i = len(pagesLst)
-    for x in sitesLst:
-        # print('ID: ', i['ID'])
-
-        if len(pagesLst) == 0:
-            # print(i['Name'])
+    if len(pagesLst) == 0:
+        for x in sitesLst:
             i += 1
             url = '/'.join(['https:/', x['Name'], 'robots.txt'])
             lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(),
                         'LastScanDate': None})
-        else:
+    else:
+        for x in sitesLst:
             for item in pagesLst:
-                # print('SiteID: ', item['SiteID'])
+        # print('SiteID: ', item['SiteID'])
                 if item['SiteID'] == x:
                     continue
                 else:
@@ -185,12 +186,16 @@ def db_read_pages_first(sitesLst, pagesLst):
                     i += 1
                     url = '/'.join(['https:/', x['Name'], 'robots.txt'])
                     lst.append({'ID': i, 'Url': url, 'SiteID': x['ID'], 'FoundDateTime': datetime.datetime.now(),
-                                'LastScanDate': None})
+                        'LastScanDate': None})
                     print(len(pagesLst))
     return lst
 
 
 def db_connect():
+    '''
+    conn = sqlite3.connect('ratepersons.db3')
+    cur = conn.cursor()
+    '''
     conn = pymysql.connect(
         host='localhost',
         user='root',
@@ -198,36 +203,67 @@ def db_connect():
         db='ratepersons',
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor)
-    cur = conn.cursor()
-    return cur
+
+    return conn
 
 
 def main():
     # Проходим по таблице sites и записываем информацию pages (robots.txt)
-    '''
-    cur = db_connect()
 
-    cur.execute('select * from pages')
-    result = cur.fetchall()
-    print(result)
-    '''
+    cn = db_connect()
+    cur = cn.cursor()
+    cur.execute('select * from Sites')
+    sitesListDB = cur.fetchall()
+    cur.execute('select * from Pages')
+    pagesListDB = cur.fetchall()
+    #print(sitesListDB)
+    #print(pagesListDB)
 
-    pages = read_pages_first(read_sites(sitesList), pagesList)
-    pagesList.extend(pages)
+    pages = db_read_pages_first(sitesListDB, pagesListDB)
+    print(pages)
+
+    sql = "insert into `Pages` (Url, SiteID, FoundDateTime) values (%s, %s, %s) "
+    for item in pages:
+        cur.execute(sql, (item['Url'], item['SiteID'], item['FoundDateTime']))
+    cn.commit()
+
 
     # print(read_pages(pagesList))
-    p = len(read_pages(pagesList))
-    print('pages : ', p)
+    #p = len(read_pages(pagesList))
+    #print('pages : ', p)
+
+    cur.execute('select * from Pages')
+    pagesListDB = cur.fetchall()
+    print('pages : ', len(pagesListDB))
 
     #Находим sitemap и хаписываем ссылку в pagesList
     print('Записываем sitemap в PAGES')
+    '''
     for i in read_pages(pagesList):
         if i['Url'].split('/')[-1].endswith('.txt'):  # Определяем куда ведет ссылка
             page = get_html(i['Url'])
             stmapurl = read_robots(page)
             write_sitemap(stmapurl, i['SiteID'], pagesList)
             i['LastScanDate'] = datetime.datetime.now()
+    '''
 
+    p = db_read_pages(cur)
+    for item in p:
+        print(item)
+        if item['Url'].split('/')[-1].endswith('.txt'):  # Определяем куда ведет ссылка
+            page = get_html(item['Url'])
+            stmapurl = read_robots(page)
+            db_write_sitemap(cur, stmapurl, item['SiteID'])
+            sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
+            t = (datetime.datetime.now(), item['ID'])
+            cur.execute(sql, t)
+    cn.commit()
+
+    cur.execute('select * from Pages')
+    pagesListDB = cur.fetchall()
+    print('pages : ', len(pagesListDB))
+
+    '''
     p = len(read_pages(pagesList))
     ask = True
     print('Читаем sitemap и записываем ссылки в pages')
@@ -251,15 +287,7 @@ def main():
                     i['LastScanDate'] = datetime.datetime.now()
                 else:
                     ask = False
-                #print(i)
-        #p = len(read_pages(pagesList))
-        #print('pages : ', p)
-        #print(ask)
-    #print(ask) 
-    #p = len(read_pages(pagesList))
-    #print('pages : ', p)
-    #print(len(pagesList))
-    
+
 
     #Проходим по полученным ссылкам и подсчитываем статитстику
     pages = read_pages(pagesList)
@@ -267,10 +295,7 @@ def main():
     print(len(pages))
     for p in pages:
         page = read_html_to_stat(get_html(p['Url']))
-        print(page)
-    
-    #page = get_html('https://lenta.ru/news/2017/01/26/peregovoru_tramp_putin/')
-    #print(read_html_to_stat(page))
+        #print(page)
         for item in read_person(personsList):
             lst = []
             print(item)
@@ -285,6 +310,7 @@ def main():
             p['LastScanDate'] = datetime.datetime.now()
 
     print(personalpagerankList)
+    '''
 
 if __name__ == '__main__':
     main()
