@@ -21,6 +21,7 @@ explored_sites = set()
 
 cursor.execute('SELECT * FROM Sites')
 
+    sql_command.execute('SELECT * FROM Sites')
 for row in cursor:
     print('Site: {}\nSite ID: {}'.format(row['Name'], row['ID']))
     sitemap_url = urlunparse(('https', row['Name'], '/sitemap.xml', '', '', ''))
@@ -52,8 +53,10 @@ db.close()
 
 class GeekSitemapSpider(SitemapSpider):
     name = 'geek_sitemap_spider'
+    get_sites()
 
     sitemap_urls = sitemaps
+    sitemap_follow = []
 
     def parse(self, response):
         url = urlparse(response.url, scheme='https')
