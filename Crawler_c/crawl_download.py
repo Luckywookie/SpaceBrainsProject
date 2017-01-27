@@ -69,6 +69,17 @@ def read_person(personsLst):
         yield item
 
 
+def db_read_person(cur):
+    '''
+    Читаем персону из списка персон
+    '''
+    sql = "select * from `Persons`"
+    cur.execute(sql)
+    result = cur.fetchall()
+    return result
+
+
+
 def read_keywords(person):
     '''
     Формируем списко ключевых слов для поиску по персоне.
@@ -78,6 +89,16 @@ def read_keywords(person):
         if keyword['PersonID'] == person['ID']:
             lst.append(keyword['Name'])
     return lst
+
+
+def db_read_keywords(cur, person):
+    '''
+    Формируем списко ключевых слов для поиску по персоне.
+    '''
+    sql = "select * from `Keywords` where `Keywords`.`PersonID`=%s"
+    cur.execute(sql, (person['ID'], ))
+    result = cur.fetchall()
+    return result
 
 
 def read_pages(pageLst):  # Выдает лист для обработки
@@ -212,6 +233,8 @@ def main():
 
     cn = db_connect()
     cur = cn.cursor()
+
+    '''
     cur.execute('select * from Sites')
     sitesListDB = cur.fetchall()
     cur.execute('select * from Pages')
@@ -295,7 +318,12 @@ def main():
                     ask = False
     cn.commit()
 
-    '''
+
+    cur.execute('select * from Pages')
+    pagesListDB = cur.fetchall()
+    print('pages : ', len(pagesListDB))
+
+
     p = len(read_pages(pagesList))
     ask = True
     print('Читаем sitemap и записываем ссылки в pages')
@@ -319,9 +347,47 @@ def main():
                     i['LastScanDate'] = datetime.datetime.now()
                 else:
                     ask = False
-
+    '''
 
     #Проходим по полученным ссылкам и подсчитываем статитстику
+
+    pages = db_read_pages(cur)
+    print('Считаем статитстику')
+    print(len(pages))
+    for p in pages:
+        page = read_html_to_stat(get_html(p['Url']))
+        # print(page)
+        for item in db_read_person(cur):
+            lst = []
+            print('person ->', item)
+            kw = db_read_keywords(cur, item)
+            print('kw ->', kw)
+            for k in kw:
+                lst.append((page.count(k['Name']), k['Name']))
+            print('Page -> ', p['Url'])
+            print(lst)
+            s = sum([x[0] for x in lst])
+            print('rank ->', s)
+
+            sql = 'insert into `personpagerank` (personid, pageid, rank) values (%s, %s, %s)'
+            t = (item['ID'], p['ID'], s)
+            cur.execute(sql, t)
+
+
+            #personalpagerankList.append({'PersonID': item['ID'], 'PageID': p['ID'], 'Rank': s})
+
+            sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
+            t = (datetime.datetime.now(), p['ID'])
+            cur.execute(sql, t)
+        cn.commit()
+
+            #p['LastScanDate'] = datetime.datetime.now()
+    cn.commit()
+    cn.close()
+    #print(personalpagerankList)
+
+
+    '''
     pages = read_pages(pagesList)
     print('Считаем статитстику')
     print(len(pages))
