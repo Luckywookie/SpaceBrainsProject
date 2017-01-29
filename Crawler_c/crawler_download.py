@@ -4,8 +4,7 @@ import gzip
 import pymysql
 import datetime
 import urllib.parse
-
-SITE = 'geekbrains.ru'
+import re
 
 
 def db_connect():
@@ -118,6 +117,25 @@ def sitemapparse(html):
     return st
 
 
+def countstat(html, word):
+    '''
+    :param html: Страница для подсчета статистики.
+    :param word: Слово по которому подсчитываем статистику
+    :return: Количество раз упоминания слован на странице
+    '''
+    soup = BeautifulSoup(html, 'lxml')
+    c = r'\b{}\b'.format(word)
+    w = re.compile(c)
+    #print(w)
+    #print(w.pattern)
+    i = 0
+    for string in soup.stripped_strings:
+        if len(w.findall(repr(string))) > 0:
+            i += len(w.findall(repr(string)))
+    print('Rank ->', i)
+    return i
+
+
 def countstatforpage(cursor, html):
     '''
     :param cursor: Курсор для взаимодействия с БД
@@ -127,18 +145,19 @@ def countstatforpage(cursor, html):
     sql = "select * from `Persons`"
     cursor.execute(sql)
     personslist = cursor.fetchall()
-    #print(personslist)
     personsdict ={}
     for person in personslist:
         lst = []
         sql = "select * from `Keywords` where `Keywords`.`PersonID`=%s"
         cursor.execute(sql, (person['ID'], ))
         keywordslist = cursor.fetchall()
-        #print(keywordslist)
+
         for keyword in keywordslist:
-            lst.append((html.count(keyword['Name']), keyword['Name']))
-        s = sum([x[0] for x in lst])
-        print('rank ->', s)
+            #lst.append((html.count(keyword['Name']), keyword['Name']))
+            #lst.append(html.count(keyword['Name']))
+            lst.append(countstat(html,keyword['Name']))
+        s = sum(lst)
+        #print('rank ->', s)
         personsdict[person['ID']] = s
     return personsdict
 
@@ -169,6 +188,10 @@ def main():
                     cur.execute(sql, t)
                     print(page)
                     continue
+                except requests.exceptions.SSLError:
+                    input('SSLError!!!!')
+                    continue
+
                 if (whatisurl(page['Url'])) == 'robots':
                     print('Записываем ссылку на sitemap в БД')
                     sitemapurl = readrobots(html)
