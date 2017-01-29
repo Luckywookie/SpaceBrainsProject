@@ -160,7 +160,15 @@ def main():
         if len(pages) > 0:
             i = 0               #Cделал для отладки
             for page in pages:
-                html = get_page(page['Url'])
+                try:
+                    html = get_page(page['Url'])
+                except requests.exceptions.HTTPError:
+                    input('HTTPError!!!')
+                    sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
+                    t = (datetime.datetime.now(), page['ID'])
+                    cur.execute(sql, t)
+                    print(page)
+                    continue
                 if (whatisurl(page['Url'])) == 'robots':
                     print('Записываем ссылку на sitemap в БД')
                     sitemapurl = readrobots(html)
@@ -168,7 +176,7 @@ def main():
                     sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
                     cur.execute(sql, (datetime.datetime.now(), page['ID']))
                 elif (whatisurl(page['Url'])) == 'sitemap':
-                    print('Получаем ссылки из sitemap b pfgbcsdftv в БД')
+                    print('Получаем ссылки из sitemap и записываем в БД')
                     urlstowrite = sitemapparse(html)
                     for url in urlstowrite:
                         print(url)
