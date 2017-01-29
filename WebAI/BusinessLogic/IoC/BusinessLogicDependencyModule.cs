@@ -18,6 +18,8 @@ namespace BusinessLogic.IoC
                 .InstancePerRequest();
             builder.RegisterType<SiteService>().As<ISiteService>()
                 .InstancePerRequest();
+            builder.RegisterType<CrawlerStatsService>().As<ICrawlerStatsService>()
+                .InstancePerRequest();
         }
     }
 }

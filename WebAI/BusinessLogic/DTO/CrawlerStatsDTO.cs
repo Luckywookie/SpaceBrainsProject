@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace WebAI.Models
+namespace BusinessLogic.DTO
 {
-    public class StatisticsViewModel
-        : Base.BaseModel
+    public class CrawlerStatsDTO
+       
     {
-        public SiteViewModel Site { get; set; }
+        public string Site { get; set; }
+        public int SiteId { get; set; }
         public int CountAllLinks { get; set; }
         public int CountVisitedLinks { get; set; }
         public int CountNotVisitedLinks { get; set; }
-
     }
 }

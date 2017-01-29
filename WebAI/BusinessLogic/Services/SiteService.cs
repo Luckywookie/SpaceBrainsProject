@@ -19,7 +19,6 @@ namespace BusinessLogic.Services
         {
             this.siteReposytory = siteReposytory;
             
-           
         }
 
         public void AddSite(SiteDTO siteDTO)
@@ -58,5 +57,14 @@ namespace BusinessLogic.Services
                .ForMember(dest => dest.Url, opt => opt.Ignore()));
             return Mapper.Map<IEnumerable<Site>, IEnumerable<SiteDTO>>(sites);
         }
+
+        public IEnumerable<PageDTO> GetAllPagesForSite(int id)
+        {
+
+            var pages = siteReposytory.GetAllPagesForSite(id);
+            Mapper.Initialize(cfg => cfg.CreateMap<Page, PageDTO>());
+            return Mapper.Map<IEnumerable<Page>, IEnumerable<PageDTO>>(pages);
+        }
+
     }
 }

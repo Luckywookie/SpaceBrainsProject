@@ -175,6 +175,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\CrawlerStatsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\PersonController.cs" />
     <Compile Include="Controllers\SiteController.cs" />
@@ -185,7 +186,7 @@
     <Compile Include="Models\Base\BaseModel.cs" />
     <Compile Include="Models\KeyWordViewModel.cs" />
     <Compile Include="Models\PersonViewModel.cs" />
-    <Compile Include="Models\StatisticsViewModel.cs" />
+    <Compile Include="Models\CrawlerStatsViewModel.cs" />
     <Compile Include="Models\SiteViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -244,7 +245,7 @@
     <Content Include="Views\Person\PersonList.cshtml" />
     <Content Include="Views\Site\Index.cshtml" />
     <Content Include="Views\Person\KeyWordList.cshtml" />
-    <Content Include="Views\Home\Statistics.cshtml" />
+    <Content Include="Views\CrawlerStats\Index.cshtml" />
     <Content Include="Views\Site\Edit.cshtml" />
     <Content Include="Views\Person\_KeyWordList.cshtml" />
     <Content Include="Views\Person\AddKeyWord.cshtml" />

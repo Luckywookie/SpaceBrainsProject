@@ -1,0 +1,45 @@
+﻿@model IEnumerable<WebAI.Models.CrawlerStatsViewModel>
+@{
+    ViewBag.Title = "Статистика";
+    int generalCountAll = 0;
+    int generalCountVisited = 0;
+    int generalCountNotVisited = 0;
+}
+
+<h3>Статистика краулера</h3>
+
+<div class="list-group">
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Сайт</td>
+                <td>Всего страниц в базе</td>
+                <td>Пройдено</td>
+                <td>Не пройдено</td>
+            </tr>
+        </thead>
+
+        @foreach (var stat in Model)
+        {
+            <tr>
+                <td>
+                    <a href="#">@stat.Site</a>
+                </td>
+                <td>@stat.CountAllLinks</td>
+                <td>@stat.CountVisitedLinks</td>
+                <td>@stat.CountNotVisitedLinks</td>
+                @{generalCountAll = generalCountAll + stat.CountAllLinks;
+                    generalCountVisited = generalCountVisited + stat.CountVisitedLinks;
+                    generalCountNotVisited = generalCountNotVisited + stat.CountNotVisitedLinks;
+                    }
+            </tr>
+                    }
+    </table>
+    <p>Всего страниц в базе данных: @generalCountAll </p>
+   <p> Не обходилось краулером: @generalCountNotVisited</p>
+    <p>Обходилось краулером: @generalCountVisited</p>
+
+</div>
+
+<button class="btn btn-info">Выгрузить в csv (доступно в версии 3.0)</button>
