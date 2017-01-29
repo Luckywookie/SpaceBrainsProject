@@ -66,9 +66,9 @@ DOWNLOAD_DELAY = 1
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 
-ITEM_PIPELINES = {
-    'crawler.pipelines.JsonWriterPipeline': 1000,
-}
+# ITEM_PIPELINES = {
+#     'crawler.pipelines.JsonWriterPipeline': 1000,
+# }
 
 FEED_EXPORT_ENCODING = 'utf-8'
 

@@ -21,8 +21,8 @@
 # from twisted.enterprise import adbapi
 
 
-class JsonWriterPipeline(object):
-    pass
+# class JsonWriterPipeline(object):
+#     pass
 
     # def open_spider(self, spider):
     #     self.file = open('geekbrains.json', 'w', encoding='utf-8')
