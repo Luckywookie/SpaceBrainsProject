@@ -175,7 +175,7 @@ def main():
                         writeurl(cur, url, page['SiteID'])
                         sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
                         cur.execute(sql, (datetime.datetime.now(), page['ID']))
-                else: #Страница для анализа.
+                else:                                           #Страница для анализа.
                     print(page['Url'])
                     d = countstatforpage(cur, html)
                     for pers, rank in d.items():
@@ -189,7 +189,7 @@ def main():
                 cn.commit()
                 i += 1                                                                          #Cделал для отладки
                 print('Осталось обойти : {} страниц из {}'.format(len(pages)-i, len(pages)))    #Cделал для отладки
-            cn.close()
+            #cn.close()
         else:
             break
     cn.close()
