@@ -27,11 +27,16 @@ namespace WebAI.Controllers
             return Mapper.Map<IEnumerable<CrawlerStatsDTO>, IEnumerable<CrawlerStatsViewModel>>(stat);
         }
 
+
         public ActionResult Index()
         {
             return View(GetCrawlerStats());
         }
 
+        public ActionResult PartialCrawlerStats()
+        {
+             return PartialView("_crawlerStats", GetCrawlerStats());
+        }
 
     }
 }

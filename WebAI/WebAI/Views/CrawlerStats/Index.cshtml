@@ -1,45 +1,27 @@
-﻿@model IEnumerable<WebAI.Models.CrawlerStatsViewModel>
+﻿@using WebAI.Models;
+@model IEnumerable<WebAI.Models.CrawlerStatsViewModel>
+@Scripts.Render("~/Scripts/jquery.unobtrusive-ajax.min.js")
 @{
     ViewBag.Title = "Статистика";
     int generalCountAll = 0;
     int generalCountVisited = 0;
     int generalCountNotVisited = 0;
+    IEnumerable<CrawlerStatsViewModel> crawlerStatsList = ViewBag.crawlerStats;
 }
 
 <h3>Статистика краулера</h3>
+<div class="form-inline">
+    @using (Ajax.BeginForm("PartialCrawlerStats", "CrawlerStats", new AjaxOptions
+    {
+        InsertionMode = InsertionMode.Replace,
+        UpdateTargetId = "product-container"
 
-<div class="list-group">
-
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <td>Сайт</td>
-                <td>Всего страниц в базе</td>
-                <td>Пройдено</td>
-                <td>Не пройдено</td>
-            </tr>
-        </thead>
-
-        @foreach (var stat in Model)
-        {
-            <tr>
-                <td>
-                    <a href="#">@stat.Site</a>
-                </td>
-                <td>@stat.CountAllLinks</td>
-                <td>@stat.CountVisitedLinks</td>
-                <td>@stat.CountNotVisitedLinks</td>
-                @{generalCountAll = generalCountAll + stat.CountAllLinks;
-                    generalCountVisited = generalCountVisited + stat.CountVisitedLinks;
-                    generalCountNotVisited = generalCountNotVisited + stat.CountNotVisitedLinks;
-                    }
-            </tr>
-                    }
-    </table>
-    <p>Всего страниц в базе данных: @generalCountAll </p>
-   <p> Не обходилось краулером: @generalCountNotVisited</p>
-    <p>Обходилось краулером: @generalCountVisited</p>
-
+    }))
+    {<input type="submit" class="btn btn-info" value="Обновить" />}
+</div>
+<hr />
+<div id="product-container">
+    @Html.Partial("_crawlerStats", crawlerStatsList)
 </div>
 
 <button class="btn btn-info">Выгрузить в csv (доступно в версии 3.0)</button>
