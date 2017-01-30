@@ -1,43 +1,81 @@
-﻿using BusinessLogic.Services.Base;
+﻿using BusinessLogic.Services;
+using BusinessLogic.Services.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using WebAI.Models;
+using AutoMapper;
+using BusinessLogic.DTO;
 
 namespace WebAI.Controllers
 {
     public class SiteController : Controller
     {
-        IPersonService _dataservice = null;
+        ISiteService siteService = null;
 
         public SiteController()
         {
 
         }
-        public SiteController(IPersonService dataservice)
+        public SiteController(ISiteService siteService)
         {
-            _dataservice = dataservice;
+            this.siteService = siteService;
         }
         public ActionResult Index()
         {
-            return View(new List<Site> {
-                new Site { Id = 1, Name = "lenta.ru", Url = "lenta.ru" }
-            });
+            return View(GetSites());
         }
-        [ActionName ("Add")] 
+
+        IEnumerable<SiteViewModel> GetSites()
+        {
+            var site = siteService.GetSites();
+            Mapper.Initialize(cfg => cfg.CreateMap<SiteDTO, SiteViewModel>());
+            return Mapper.Map<IEnumerable<SiteDTO>, IEnumerable<SiteViewModel>>(site);
+        }
+
+
+
+        [HttpGet]
         public ActionResult Add()
 
         {
-            return View("Edit");
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Add(SiteViewModel newSite)
+        {
+            Mapper.Initialize(cfg => cfg.CreateMap<SiteViewModel, SiteDTO>());
+            siteService.AddSite(Mapper.Map<SiteViewModel, SiteDTO>(newSite));
+            return RedirectToAction("Index");
         }
 
 
-        public ActionResult Edit()
 
+
+        [HttpGet]
+        public ActionResult Edit(int id)
         {
-            return View("Edit");
+            var siteDTO = siteService.GetSiteById(id);
+            Mapper.Initialize(cfg => cfg.CreateMap<SiteDTO, SiteViewModel>());
+            return View(Mapper.Map<SiteDTO,SiteViewModel>(siteDTO));
+        }
+
+        [HttpPost]
+        public ActionResult Edit (SiteViewModel siteToChange)
+        {
+            Mapper.Initialize(cfg => cfg.CreateMap<SiteViewModel, SiteDTO>());
+            var siteDTO = Mapper.Map<SiteViewModel, SiteDTO>(siteToChange);
+            siteService.ChangeSite(siteDTO);
+            return RedirectToAction("Index");
+        }
+
+        public ActionResult Delete(int id)
+        {
+            siteService.DeleteSiteById(id);
+            return RedirectToAction("Index");
         }
     }
 }

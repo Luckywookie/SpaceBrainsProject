@@ -41,17 +41,17 @@ namespace DataAccess.Repositories
 
         }
 
-        public void AddSite(Site site, string url)
-        {
-            if (site != null)
-            {
-                context.Sites.Add(site);
-                context.SaveChanges();
+        //public void AddSite(Site site, string url)
+        //{
+        //    if (site != null)
+        //    {
+        //        context.Sites.Add(site);
+        //        context.SaveChanges();
 
-                context.Pages.Add(new Page { Url = url, SiteId = site.Id, FoundDateTime = DateTime.Now });
-                context.SaveChanges();
-            }
-        }
+        //        context.Pages.Add(new Page { Url = url, SiteId = site.Id, FoundDateTime = DateTime.Now });
+        //        context.SaveChanges();
+        //    }
+        //}
 
         public  void ChangePerson(Person person)
         {
@@ -69,15 +69,19 @@ namespace DataAccess.Repositories
             context.SaveChanges();
         }
 
-        public void ChangeSite(Site site)
-        {
-            if (site == null)
-                return;
-            context.Entry(site).State = System.Data.Entity.EntityState.Modified;
-            context.SaveChanges();
-        }
+        //public void ChangeSite(Site site)
+        //{
+        //    if (site == null)
+        //        return;
+        //    context.Entry(site).State = System.Data.Entity.EntityState.Modified;
+        //    context.SaveChanges();
+        //}
 
-        public void DeleteKeyWord(KeyWord keyword)
+        public void DeleteKeyWordById(int id)
+        {
+            DeleteKeyWord(context.KeyWords.Find(id));
+        }
+        private void DeleteKeyWord(KeyWord keyword)
         {
             if (keyword == null)
                 return;
@@ -94,14 +98,14 @@ namespace DataAccess.Repositories
             context.SaveChanges();
         }
 
-        public void DeleteSiteById(int id)
-        {
-            Site site = context.Sites.Include(x => x.Pages).FirstOrDefault(x => x.Id == id);
-            if (site == null)
-                return;
-            context.Sites.Remove(site);
-            context.SaveChanges();
-        }
+        //public void DeleteSiteById(int id)
+        //{
+        //    Site site = context.Sites.Include(x => x.Pages).FirstOrDefault(x => x.Id == id);
+        //    if (site == null)
+        //        return;
+        //    context.Sites.Remove(site);
+        //    context.SaveChanges();
+        //}
 
         public IEnumerable<Person> GetPersons()
         {
@@ -125,7 +129,10 @@ namespace DataAccess.Repositories
             return GetKeyWords(context.Persons.FirstOrDefault(x => x.Name.Trim().ToLower() == personName.Trim().ToLower()));
         }
 
-        
+        public IEnumerable<KeyWord> GetKeyWords(int personId)
+        {
+            return GetKeyWords(context.Persons.FirstOrDefault(x => x.Id == personId));
+        }
 
         public Person GetPerson(int id)
         {
@@ -137,8 +144,6 @@ namespace DataAccess.Repositories
             return context.KeyWords.FirstOrDefault(x => x.Id == id);
         }
 
-        
-
-        
+       
     }
 }
