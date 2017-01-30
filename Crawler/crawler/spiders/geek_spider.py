@@ -90,17 +90,17 @@ class GeekSitemapSpider(SitemapSpider):
         p = cursor.fetchall()
         try:
             page = p[0]
-            print(page['ID'])
+            print('PageID: ', page['ID'])
         except IndexError:
             sql = 'INSERT INTO Pages (Url, SiteID, FoundDateTime, LastScanDate) VALUES (%s, %s, %s, %s)'
-            site_id = site_ids[urlparse(url).netloc]
+            site_id = site_ids[url.netloc]
             cursor.execute(sql, (url.geturl(), site_id, datetime.today(), datetime.today()))
             db.commit()
             sql = 'select * from `Pages` where `Pages`.`Url`=%s'
             cursor.execute(sql, (url.geturl(),))
             p = cursor.fetchall()
             page = p[0]
-            print(page['ID'])
+            print('PageID: ', page['ID'])
 
         d = self.countstatforpage(cursor, response.text)
         for pers, rank in d.items():
@@ -214,7 +214,7 @@ class GeekSitemapSpider(SitemapSpider):
         for string in soup.stripped_strings:
             if len(w.findall(repr(string))) > 0:
                 i += len(w.findall(repr(string)))
-        print('Rank ->', i)
+        print('Rank {}-> {}'.format(word, i))
         return i
 
     def countstatforpage(self, cursor, html):
