@@ -128,7 +128,7 @@ def main():
     cn = db_connect()
     cur = cn.cursor()
 
-    
+
     cur.execute('select * from Sites')
     sitesListDB = cur.fetchall()
     cur.execute('select * from Pages')
