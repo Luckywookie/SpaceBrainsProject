@@ -58,13 +58,6 @@ namespace BusinessLogic.Services
             return Mapper.Map<IEnumerable<Site>, IEnumerable<SiteDTO>>(sites);
         }
 
-        public IEnumerable<PageDTO> GetAllPagesForSite(int id)
-        {
-
-            var pages = siteReposytory.GetAllPagesForSite(id);
-            Mapper.Initialize(cfg => cfg.CreateMap<Page, PageDTO>());
-            return Mapper.Map<IEnumerable<Page>, IEnumerable<PageDTO>>(pages);
-        }
 
     }
 }

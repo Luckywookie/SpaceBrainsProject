@@ -16,6 +16,5 @@ namespace BusinessLogic.Services.Base
         
         void AddSite(SiteDTO siteDTO);
         void ChangeSite(SiteDTO siteDTO);
-        IEnumerable<PageDTO> GetAllPagesForSite(int id);
     }
 }

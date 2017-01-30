@@ -23,8 +23,6 @@ namespace DataAccess.Repositories.Base
 
         
         IEnumerable<Site> GetSites();
-        IEnumerable<Page> GetAllPagesForSite(int id);
-
         Site GetSite(int id);
 
 

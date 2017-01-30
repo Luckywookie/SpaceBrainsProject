@@ -14,11 +14,9 @@ namespace WebAI.Controllers
     {
 
         ICrawlerStatsService crawlerStatsService = null;
-        ISiteService siteService = null;
-        public CrawlerStatsController(ICrawlerStatsService crawlerStatsService, ISiteService siteService)
+        public CrawlerStatsController(ICrawlerStatsService crawlerStatsService)
         {
             this.crawlerStatsService = crawlerStatsService;
-            this.siteService = siteService;
         }
         
         public IEnumerable<CrawlerStatsViewModel> GetCrawlerStats()

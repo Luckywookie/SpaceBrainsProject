@@ -11,6 +11,7 @@ namespace BusinessLogic.Services.Base
     {
 
         IEnumerable<CrawlerStatsDTO> GetCrawlerStats();
-
+        IEnumerable<SiteDTO> GetSites();
+        IEnumerable<PageDTO> GetAllPagesForSite(int id);
     }
 }

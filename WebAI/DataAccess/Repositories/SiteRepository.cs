@@ -73,10 +73,7 @@ namespace DataAccess.Repositories
         {
             return context.Sites.FirstOrDefault(x => x.Id == id);
         }
-        public IEnumerable<Page> GetAllPagesForSite(int id)
-        {
-            return context.Pages.Where(x => x.SiteId == id).ToArray();
-        }
+
     
 
 
