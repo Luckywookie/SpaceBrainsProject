@@ -182,14 +182,15 @@ def main():
                 try:
                     html = get_page(page['Url'])
                 except requests.exceptions.HTTPError:
-                    input('HTTPError!!!')
+                    print('HTTPError!!!')
                     sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
                     t = (datetime.datetime.now(), page['ID'])
                     cur.execute(sql, t)
                     print(page)
                     continue
                 except requests.exceptions.SSLError:
-                    input('SSLError!!!!')
+                    print('SSLError!!!!')
+                    print(page)
                     continue
 
                 if (whatisurl(page['Url'])) == 'robots':
@@ -210,8 +211,8 @@ def main():
                     print(page['Url'])
                     d = countstatforpage(cur, html)
                     for pers, rank in d.items():
-                        print(pers, rank)
-                        print(page['ID'])
+                        #print(pers, rank)
+                        #print(page['ID'])
                         sql = 'insert into `personpagerank` (personid, pageid, rank) values (%s, %s, %s)'
                         cur.execute(sql, (pers, page['ID'], rank))
 
