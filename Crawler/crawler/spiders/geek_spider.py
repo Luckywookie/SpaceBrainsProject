@@ -12,13 +12,15 @@ from scrapy.spiders import Spider
 from scrapy.http import Request, XmlResponse
 from scrapy.utils.sitemap import Sitemap, sitemap_urls_from_robots
 from scrapy.utils.gz import gunzip, is_gzipped
-
-logger = logging.getLogger(__name__)
+from bs4 import BeautifulSoup
+import re
 
 from scrapy.spiders import SitemapSpider
 from datetime import datetime
 import pymysql
 from urllib.parse import *
+
+logger = logging.getLogger(__name__)
 
 sitemaps = []
 site_ids = {}
@@ -34,7 +36,7 @@ db = pymysql.connect(host='localhost', user='root', password='',
 cursor = db.cursor()
 
 
-def get_sites():
+def get_sites_words():
 
     cursor.execute('SELECT * FROM Sites')
     for site in cursor:
@@ -75,36 +77,36 @@ def get_sites():
 
 class GeekSitemapSpider(SitemapSpider):
     name = 'geek_sitemap_spider'
-    get_sites()
+    get_sites_words()
 
     sitemap_urls = new_sitemaps
-    sitemap_follow = []
-    old_sitemap_urls = ()
+    old_sitemap_urls = []
 
     def parse(self, response):
         url = urlparse(response.url)
         print('page_url_from_parse: ' + url.geturl())
         cursor = db.cursor()
-        sql = 'UPDATE `Pages` SET `LastScanDate`=%s WHERE `Pages`.`Url` = %s'
+
+        sql = 'select * from `Pages` where `Pages`.`Url`=%s'
+        cursor.execute(sql, (url.geturl(), ))
+        p = cursor.fetchall()
+        print(p)
+        try:
+            page = p[0]
+        except IndexError:
+            page = p
+        print(page)
+
+        d = self.countstatforpage(cursor, response.text)
+        for pers, rank in d.items():
+            print(pers, rank)
+            print(page['ID'])
+            sql = 'insert into `personpagerank` (personid, pageid, rank) values (%s, %s, %s)'
+            cursor.execute(sql, (pers, page['ID'], rank))
+
+        sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`Url`=%s'
         cursor.execute(sql, (datetime.today().strftime("%d/%m/%y %H:%M"), url.geturl()))
         db.commit()
-
-        rank = {}
-        for word in keywords:
-            reg = '//text()[re:test(., "a-z")]'
-            theHTML = response.xpath(reg).extract()
-            print(theHTML)
-            print(word['Name'])
-            rank[word['PersonID']] = 0
-            if word['Name'] in theHTML:
-                rank[word['PersonID']] += 1
-        for x in rank:
-            if rank[x] > 0:
-                print(rank)
-                ranks.append([rank, response.url])
-                print('RANKS')
-                for r in ranks:
-                    print(r)
         print('\nNEXT PAGE\n')
 
     # sitemap_rules = [('', 'parse')]
@@ -161,9 +163,8 @@ class GeekSitemapSpider(SitemapSpider):
                         yield Request(loc, callback=self._parse_sitemap)
             elif s.type == 'urlset':
                 for loc in iterloc(s):
-                    print('urlset.loc: ' + loc)
                     u = urlparse(loc, scheme='https')
-                    print('https: ' + urlunparse(('https', u.netloc, u.path, '', '', '')))
+                    print('urlset.loc.https: ' + urlunparse(('https', u.netloc, u.path, '', '', '')))
                     sql = 'INSERT INTO Pages (Url, SiteID, FoundDateTime, LastScanDate) VALUES (%s, %s, %s, null)'
                     site_id = site_ids[urlparse(loc).netloc]
                     if u.path:
@@ -193,6 +194,49 @@ class GeekSitemapSpider(SitemapSpider):
             return response.body
         elif response.url.endswith('.xml.gz'):
             return gunzip(response.body)
+
+    def countstat(self, html, word):
+        '''
+        :param html: Страница для подсчета статистики.
+        :param word: Слово по которому подсчитываем статистику
+        :return: Количество раз упоминания слован на странице
+        '''
+        soup = BeautifulSoup(html, 'lxml')
+        c = r'\b{}\b'.format(word)
+        w = re.compile(c)
+        # print(w)
+        # print(w.pattern)
+        i = 0
+        for string in soup.stripped_strings:
+            if len(w.findall(repr(string))) > 0:
+                i += len(w.findall(repr(string)))
+        print('Rank ->', i)
+        return i
+
+    def countstatforpage(self, cursor, html):
+        '''
+        :param cursor: Курсор для взаимодействия с БД
+        :param html: HTML страницы которую анализируем на предмет сколько раз встречается ключевые слова.
+        :return: Словаь по персонам с ID персоны и статистика для проанализируемой странице
+        '''
+        sql = "select * from `Persons`"
+        cursor.execute(sql)
+        personslist = cursor.fetchall()
+        personsdict = {}
+        for person in personslist:
+            lst = []
+            sql = "select * from `Keywords` where `Keywords`.`PersonID`=%s"
+            cursor.execute(sql, (person['ID'],))
+            keywordslist = cursor.fetchall()
+
+            for keyword in keywordslist:
+                # lst.append((html.count(keyword['Name']), keyword['Name']))
+                # lst.append(html.count(keyword['Name']))
+                lst.append(self.countstat(html, keyword['Name']))
+            s = sum(lst)
+            # print('rank ->', s)
+            personsdict[person['ID']] = s
+        return personsdict
 
 
 def regex(x):
