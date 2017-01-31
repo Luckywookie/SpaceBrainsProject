@@ -188,8 +188,8 @@ def main():
                     cur.execute(sql, t)
                     print(page)
                     continue
-                except requests.exceptions.SSLError:
-                    print('SSLError!!!!')
+                except requests.exceptions.ConnectionError as err:
+                    print('Connetion Error ->', err)
                     print(page)
                     continue
 
