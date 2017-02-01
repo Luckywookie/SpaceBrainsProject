@@ -79,6 +79,7 @@ class GeekSitemapSpider(SitemapSpider):
 
     sitemap_urls = new_sitemaps
     old_sitemap_urls = []
+    sitemap_follow = ['']
 
     def parse(self, response):
         url = urlparse(response.url)
@@ -90,7 +91,7 @@ class GeekSitemapSpider(SitemapSpider):
         p = cursor.fetchall()
         try:
             page = p[0]
-            print('PageID: ', page['ID'])
+            # print('PageID: ', page['ID'])
         except IndexError:
             sql = 'INSERT INTO Pages (Url, SiteID, FoundDateTime, LastScanDate) VALUES (%s, %s, %s, %s)'
             site_id = site_ids[url.netloc]
@@ -100,7 +101,7 @@ class GeekSitemapSpider(SitemapSpider):
             cursor.execute(sql, (url.geturl(),))
             p = cursor.fetchall()
             page = p[0]
-            print('PageID: ', page['ID'])
+            # print('PageID: ', page['ID'])
 
         d = self.countstatforpage(cursor, response.text)
         for pers, rank in d.items():
@@ -114,7 +115,6 @@ class GeekSitemapSpider(SitemapSpider):
         print('\nNEXT PAGE\n')
 
     # sitemap_rules = [('', 'parse')]
-    # sitemap_follow = ['']
     # sitemap_alternate_links = False
 
     # def __init__(self, *a, **kw):
@@ -168,7 +168,7 @@ class GeekSitemapSpider(SitemapSpider):
             elif s.type == 'urlset':
                 for loc in iterloc(s):
                     u = urlparse(loc, scheme='https')
-                    print('urlset.loc.https: ' + urlunparse(('https', u.netloc, u.path, '', '', '')))
+                    # print('urlset.loc.https: ' + urlunparse(('https', u.netloc, u.path, '', '', '')))
                     sql = 'INSERT INTO Pages (Url, SiteID, FoundDateTime, LastScanDate) VALUES (%s, %s, %s, null)'
                     site_id = site_ids[urlparse(loc).netloc]
                     if u.path:
@@ -214,7 +214,7 @@ class GeekSitemapSpider(SitemapSpider):
         for string in soup.stripped_strings:
             if len(w.findall(repr(string))) > 0:
                 i += len(w.findall(repr(string)))
-        print('Rank {}-> {}'.format(word, i))
+        print('Rank {} -> {}'.format(word, i))
         return i
 
     def countstatforpage(self, cursor, html):
