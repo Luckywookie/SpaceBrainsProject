@@ -184,7 +184,7 @@ def main():
                 except requests.exceptions.HTTPError:
                     print('HTTPError!!!')
                     sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
-                    t = (datetime.datetime.now(), page['ID'])
+                    t = (datetime.date.today(), page['ID'])
                     cur.execute(sql, t)
                     print(page)
                     continue
@@ -198,7 +198,7 @@ def main():
                     sitemapurl = readrobots(html)
                     writeurl(cur, sitemapurl, page['SiteID'])
                     sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
-                    cur.execute(sql, (datetime.datetime.now(), page['ID']))
+                    cur.execute(sql, (datetime.datetime.today(), page['ID']))
                 elif (whatisurl(page['Url'])) == 'sitemap':
                     print('Получаем ссылки из sitemap и записываем в БД')
                     urlstowrite = sitemapparse(html)
