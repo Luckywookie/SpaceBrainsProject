@@ -57,7 +57,7 @@ def writerobotstodb(cursor, sites):
     sql = "insert into `Pages` (Url, SiteID, FoundDateTime) values (%s, %s, %s) "
     for site in sites:
         url = urllib.parse.urlunsplit(('https', site['Name'], 'robots.txt', '', ''))
-        cursor.execute(sql, (url, site['ID'], datetime.datetime.now()))
+        cursor.execute(sql, (url, site['ID'], datetime.datetime.today()))
 
 
 def pagestowalk(cursor):
@@ -104,7 +104,7 @@ def writeurl(cursor, url, siteid):
     '''
     sql = "insert into `Pages` (Url, SiteID, FoundDateTime) values (%s, %s, %s) "
     print('Пишем url в БД')
-    cursor.execute(sql, (url, siteid, datetime.datetime.now()))
+    cursor.execute(sql, (url, siteid, datetime.datetime.today()))
 
 
 def sitemapparse(html):
@@ -136,7 +136,7 @@ def countstat(html, word):
     return i
 
 
-def countstatforpage(cursor, html):
+def countstatforpage(cursor, html): #cursor = repository
     '''
     :param cursor: Курсор для взаимодействия с БД
     :param html: HTML страницы которую анализируем на предмет сколько раз встречается ключевые слова.
@@ -145,12 +145,12 @@ def countstatforpage(cursor, html):
     sql = "select * from `Persons`"
     cursor.execute(sql)
     personslist = cursor.fetchall()
-    personsdict ={}
+    personsdict = {}
     for person in personslist:
         lst = []
         sql = "select * from `Keywords` where `Keywords`.`PersonID`=%s"
-        cursor.execute(sql, (person['ID'], ))
-        keywordslist = cursor.fetchall()
+        cursor.execute(sql, (person['ID'], )) #GetKeywordByPersonID
+        keywordslist = cursor.fetchall() #GetKeywordByPersonID
 
         for keyword in keywordslist:
             #lst.append((html.count(keyword['Name']), keyword['Name']))
@@ -206,7 +206,7 @@ def main():
                         print(url)
                         writeurl(cur, url, page['SiteID'])
                         sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
-                        cur.execute(sql, (datetime.datetime.now(), page['ID']))
+                        cur.execute(sql, (datetime.datetime.today(), page['ID']))
                 else:                                           #Страница для анализа.
                     print(page['Url'])
                     d = countstatforpage(cur, html)
@@ -217,7 +217,7 @@ def main():
                         cur.execute(sql, (pers, page['ID'], rank))
 
                     sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
-                    cur.execute(sql, (datetime.datetime.now(), page['ID']))
+                    cur.execute(sql, (datetime.datetime.today(), page['ID']))
                 cn.commit()
                 i += 1                                                                          #Cделал для отладки
                 print('Осталось обойти : {} страниц из {}'.format(len(pages)-i, len(pages)))    #Cделал для отладки
