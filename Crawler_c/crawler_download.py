@@ -5,6 +5,7 @@ import pymysql
 import datetime
 import urllib.parse
 import re
+import repository
 
 
 def db_connect():
