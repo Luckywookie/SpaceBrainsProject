@@ -5,51 +5,77 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-# import json
-# import codecs
+# from bs4 import BeautifulSoup
+# import re
+from datetime import datetime
+import pymysql
+from urllib.parse import *
+from time import sleep
 
-# import sys
-# import MySQLdb
-# import hashlib
-# from scrapy.exceptions import DropItem
-# from scrapy.http import Request
-#
-# from datetime import datetime
-# from hashlib import md5
-# from scrapy import log
-# from scrapy.exceptions import DropItem
-# from twisted.enterprise import adbapi
+db = pymysql.connect(host='localhost', port=3306, user='root', password='',
+                         db='ratepersons', charset='utf8mb4',
+                         cursorclass=pymysql.cursors.DictCursor)
+cursor = db.cursor()
+site_ids = {}
 
 
-# class JsonWriterPipeline(object):
-#     pass
+def get_site_ids():
+    cursor.execute('SELECT * FROM Sites')
+    for site in cursor:
+        site_ids[site['Name']] = site['ID']
+    return site_ids
 
-    # def open_spider(self, spider):
-    #     self.file = open('geekbrains.json', 'w', encoding='utf-8')
-    #
-    # def close_spider(self, spider):
-    #     self.file.close()
-    #
-    # def process_item(self, spider, item):
-    #     line = json.dumps(dict(item), ensure_ascii=False) + "\n"
-    #     self.file.write(line)
-    #     return item
 
-# class MySQLStorePipeline(object):
-#     def __init__(self):
-#         self.conn = MySQLdb.connect('host', 'user', 'passwd', 'dbname', charset="utf8", use_unicode=True)
-#         self.cursor = self.conn.cursor()
-#
-#     def process_item(self, item, spider):
-#         try:
-#             self.cursor.execute("""INSERT INTO example_book_store (book_name, price) VALUES (%s, %s)""",
-#                                 (item['book_name'].encode('utf-8'),
-#                                  item['price'].encode('utf-8')))
-#             self.conn.commit()
-#         except MySQLdb.Error, e:
-#             print('Error {}: {}'.format(e.args[0], e.args[1]))
-#             return item
-#
+class BrainedItemPipeline(object):
+    site_ids = get_site_ids()
+
+    def __init__(self):
+        self.db = pymysql.connect(host='localhost', port=3306, user='root', password='',
+                         db='ratepersons', charset='utf8mb4',
+                         cursorclass=pymysql.cursors.DictCursor)
+        self.cursor = self.db.cursor()
+
+    def close_spider(self, spider):
+        self.cursor.close()
+        self.db.close()
+
+    def process_item(self, item, spider):
+        return item
+        # print(item)
+        # print(item['url'])
+        # print(item['Rank'])
+        # print(item['PersonID'])
+
+        # sql = 'select * from `Pages` where `Pages`.`Url`=%s'
+        # self.cursor.execute(sql, (item['url'],))
+        # # sleep(0.1)
+        # pages = self.cursor.fetchall()
+        # try:
+        #     page = pages[0]
+        # except IndexError:
+        #     url = urlparse(item['url'])
+        #     sql = 'INSERT INTO Pages (Url, SiteID, FoundDateTime, LastScanDate) VALUES (%s, %s, %s, %s)'
+        #     site_id = self.site_ids[url.netloc]
+        #     self.cursor.execute(sql, (item['url'], site_id, datetime.today(), datetime.today()))
+        #     self.db.commit()
+        #     # sleep(0.5)
+        #     sql = 'select * from `Pages` where `Pages`.`Url`=%s'
+        #     self.cursor.execute(sql, (url.geturl(),))
+        #     pages = self.cursor.fetchall()
+        #     page = pages[0]
+        # sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`Url`=%s'
+        # self.cursor.execute(sql, (datetime.today(), item['url']))
+        # self.db.commit()
+        # # sleep(0.5)
+        # for pid in item['PersonID']:
+        #     for rnk in item['Rank']:
+        #         sql = 'insert into `personpagerank` (personid, pageid, rank) values (%s, %s, %s)'
+        #         self.cursor.execute(sql, (pid, page['ID'], rnk))
+        #         self.db.commit()
+
+                # sleep(0.5)
+        # self.db.commit()
+
 # class MySQLStorePipeline(object):
 #     """A pipeline to store the item in a MySQL database.
 #     This implementation uses Twisted's asynchronous database API.

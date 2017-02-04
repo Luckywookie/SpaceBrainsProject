@@ -10,23 +10,15 @@ from scrapy.loader import ItemLoader
 from scrapy.loader.processors import TakeFirst, Join
 
 
-class BrainItem(scrapy.Item):
+class BrainedItem(scrapy.Item):
     url = scrapy.Field()
-    # title = scrapy.Field()
-    # subtitle = scrapy.Field()
-    # description = scrapy.Field()
-    # logo = scrapy.Field()
-    # teachers = scrapy.Field()
+    Rank = scrapy.Field()
+    PersonID = scrapy.Field()
 
 
-class BrainItemLoader(ItemLoader):
+class BrainedItemLoader(ItemLoader):
     url_out = TakeFirst()
-    # title_out = TakeFirst()
-    # subtitle_out = TakeFirst()
-    # logo_out = TakeFirst()
-    # description_in = Join()
-    # description_out = TakeFirst()
-    # teachers_in = Join()
-    # teachers_out = TakeFirst()
-    # url_out = MapCompose(lambda x: x.lower())
-
+    Rank_in = Join(',')
+    Rank_out = TakeFirst()
+    PersonID_in = Join(',')
+    PersonID_out = TakeFirst()
