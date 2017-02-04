@@ -1,8 +1,7 @@
 import pymysql
 
 # import sqlite3
-# import datetime
-
+import datetime
 
 conn = pymysql.connect(
     host='localhost',
@@ -29,51 +28,51 @@ class Entity:
 class Person(Entity):
     """Класс описыввает сущность Person"""
 
-    def __init__(self, _id=0, name=None):
+    def __init__(self, ID=0, Name=None):
         super(Entity, self).__init__()
-        self.ID = _id
-        self.name = name
+        self.ID = ID
+        self.name = Name
 
 
 class Keyword(Entity):
     """Класс описыввает сущность Keyword"""
 
-    def __init__(self, _id=0, name=None, personid=None):
+    def __init__(self, ID=0, Name=None, PersonID=None):
         super(Entity, self).__init__()
-        self.ID = _id
-        self.Name = name
-        self.PersonID = personid
+        self.ID = ID
+        self.Name = Name
+        self.PersonID = PersonID
 
 
 class Site(Entity):
     """Класс описыввает сущность Site"""
 
-    def __init__(self, _id=0, name=None):
+    def __init__(self, ID=0, Name=None):
         super(Entity, self).__init__()
-        self.ID = _id
-        self.Name = name
+        self.ID = ID
+        self.Name = Name
 
 
 class Page(Entity):
     """Класс описыввает сущность Page"""
 
-    def __init__(self, _id=0, url=None, siteid=0, founddatetime=None, lastscandate=None):
+    def __init__(self, ID=0, Url=None, SiteID=0, FoundDateTime=None, LastScanDate=None):
         super(Entity, self).__init__()
-        self.ID = _id
-        self.Url = url
-        self.SiteID = siteid
-        self.FoundDateTime = founddatetime
-        self.LastScanDate = lastscandate
+        self.ID = ID
+        self.Url = Url
+        self.SiteID = SiteID
+        self.FoundDateTime = FoundDateTime
+        self.LastScanDate = LastScanDate
 
 
 class PersonPageRank(Entity):
     """Класс описыввает сущность PersonPageRank"""
 
-    def __init__(self, personid=0, pageid=0, rank=0):
+    def __init__(self, PersonID=0, PageID=0, Rank=0):
         super(Entity, self).__init__()
-        self.PersonID = personid
-        self.PageID = pageid
-        self.Rank = rank
+        self.PersonID = PersonID
+        self.PageID = PageID
+        self.Rank = Rank
 
 
 class FakeKeywordRepository:
@@ -107,13 +106,13 @@ class DbKeywordRepository:
         # return [item.value for item in keywords if item.value['PersonID'] == personid]
 
 
-class DbPersonReposytory:
+class DbPersonRepository:
     """Класс репозитория Person работающий с БД"""
-
     def __init__(self):
         pass
 
-    def getpesons(self):
+
+    def getpersons(self):
         sql = "select * from `Persons`"
         cursor.execute(sql)
         result = cursor.fetchall()
@@ -121,10 +120,11 @@ class DbPersonReposytory:
 
 
 class SiteRepositoryWorker:
-    '''Класс реализует взаимодействие с репозиторием Site'''
+    """Класс реализует взаимодействие с репозиторием Site"""
 
     def __init__(self, repository):
         self.repository = repository
+
 
     def getapersons(self):
         result = [item for item in self.repository.getpersites()]
@@ -136,7 +136,7 @@ class SiteRepositoryWorker:
 
 
 class DbSiteReposytory:
-    '''Класс репозитория Site работающий с БД'''
+    """Класс репозитория Site работающий с БД"""
 
     def __init__(self):
         pass
@@ -155,18 +155,18 @@ class DbSiteReposytory:
 
 
 class PersonRepositoryWorker:
-    '''Класс реализует взаимодействие с репозиторием Person'''
+    """Класс реализует взаимодействие с репозиторием Person"""
 
     def __init__(self, repository):
         self.repository = repository
 
-    def getapersons(self):
+    def getpersons(self):
         result = [item for item in self.repository.getpersons()]
         return result
 
 
 class KeywordRepositoryWorker:
-    '''Класс реализует взаимодействие с репозиторием Keyword'''
+    """Класс реализует взаимодействие с репозиторием Keyword"""
 
     def __init__(self, repository):
         self.repository = repository
@@ -176,7 +176,7 @@ class KeywordRepositoryWorker:
 
 
 class PagesRepositoryWorker:
-    '''Класс реализует взаимодействие с репозиторием Pages'''
+    """Класс реализует взаимодействие с репозиторием Pages"""
 
     def __init__(self, repository):
         self.repository = repository
@@ -201,7 +201,7 @@ class PagesRepositoryWorker:
 
 
 class DbPageRepository:
-    '''Класс репозитория Page работающий с БД'''
+    """Класс репозитория Page работающий с БД"""
 
     def __init__(self):
         pass
@@ -238,7 +238,7 @@ class DbPageRepository:
 
 
 class DbPersonPageRankRepository:
-    '''Класс репозитория PersonPageRank работающий с БД'''
+    """Класс репозитория PersonPageRank работающий с БД"""
 
     def __init__(self):
         pass
@@ -259,22 +259,17 @@ class DbPersonPageRankRepository:
         '''
 
 
+class PersonPageRankRepositoryWorker:
+    """Класс реализует взаимодействие с репозиторием PersonPageRankRepository"""
+
+    def __init__(self, repository):
+        self.repository = repository
+
+    def writeranktostore(self, page):
+        self.repository.writeranktostore(page)
+
+
 def main():
-    # sql = 'select * from `Sites`'
-    # cur.execute(sql)
-    # result = cur.fetchall()
-    # for row in cur.execute(sql):
-    #	print(row)
-    # print(result)
-    # db.close()
-    # sitesrepo = DbSitesRepository()
-    # s = RepositoryViewer(sitesrepo)
-    # s.view()
-
-    # keywordsrepo = FakeKeywordRepository()
-    # k = RepositoryViewer(keywordsrepo)
-    # k.view()
-
     keywordrepo = FakeKeywordRepository()
     k = KeywordRepositoryWorker(keywordrepo)
     k1 = k.getbypersonid(1)
@@ -287,9 +282,14 @@ def main():
     p = PagesRepositoryWorker(pagesrepo)
     p1 = p.getpagelastscandatenull()
 
-   
-    print( p1 )
-    # pp = Page(0, 'http://lenta.ru/sitemap.xml', 2, datetime.datetime.today() )
+    print(p1)
+
+    sitesrepo = DbSiteReposytory()
+    s = SiteRepositoryWorker(sitesrepo)
+    s1 = s.getsitestorank()
+
+    print(s1)
+    # pp = Page( Url = 'http://lenta.ru/sitemap.xml', SiteID = 2, FoundDateTime = datetime.datetime.today() )
     # print( pp.value )
     # p.writepagestostore(pp)
     # pp = Page(_id=3687, lastscandate=datetime.datetime.today() )
