@@ -3,9 +3,12 @@ using BusinessLogic.DTO;
 using BusinessLogic.Services.Base;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Xml;
 using WebAI.Models;
 
 namespace WebAI.Controllers
@@ -38,5 +41,31 @@ namespace WebAI.Controllers
              return PartialView("_crawlerStats", GetCrawlerStats());
         }
 
+        public void ExportToCSV()
+        {
+
+        StringWriter sw = new StringWriter();
+
+        sw.WriteLine("\"Sate name\";\"All pages in base\";\"Checked crawlers\";\"Not checked crawlers\"");
+
+        Response.ClearContent();
+        Response.AddHeader("content-disposition", "attachment;filename=Exported_CrawlerStats.csv");
+            Response.ContentType = "text/csv";
+
+            foreach (var line in GetCrawlerStats())
+            {
+                sw.WriteLine(string.Format("\"{0}\";\"{1}\";\"{2}\";\"{3}\"",
+                                           line.Site,
+                                           line.CountAllLinks,
+                                           line.CountVisitedLinks,
+                                           line.CountNotVisitedLinks));
+            }
+
+            Response.Write(sw.ToString());
+
+            Response.End();
+        }
+
     }
+
 }

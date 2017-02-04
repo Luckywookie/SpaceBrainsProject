@@ -3,9 +3,6 @@
 @Scripts.Render("~/Scripts/jquery.unobtrusive-ajax.min.js")
 @{
     ViewBag.Title = "Статистика";
-    int generalCountAll = 0;
-    int generalCountVisited = 0;
-    int generalCountNotVisited = 0;
     IEnumerable<CrawlerStatsViewModel> crawlerStatsList = ViewBag.crawlerStats;
 }
 
@@ -24,4 +21,4 @@
     @Html.Partial("_crawlerStats", crawlerStatsList)
 </div>
 
-<button class="btn btn-info">Выгрузить в csv (доступно в версии 3.0)</button>
+<a href="@Url.Action("ExportToCSV", "CrawlerStats")" class="btn btn-info">Выгрузить в .csv</a>

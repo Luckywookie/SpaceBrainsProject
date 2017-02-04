@@ -14,5 +14,6 @@ namespace BusinessLogic.DTO
         public int CountAllLinks { get; set; }
         public int CountVisitedLinks { get; set; }
         public int CountNotVisitedLinks { get; set; }
+
     }
 }
