@@ -76,7 +76,7 @@ class PersonPageRank(Entity):
 
 
 class FakeKeywordRepository:
-    """Класс фекогового репозитория Krywords"""
+    """Класс фейкогового репозитория Krywords"""
 
     def __init__(self):
         pass
@@ -268,30 +268,7 @@ class PersonPageRankRepositoryWorker:
 
 
 def main():
-    keywordrepo = FakeKeywordRepository()
-    k = KeywordRepositoryWorker(keywordrepo)
-    k1 = k.getbypersonid(1)
-    print(k1)
-
-    # k1 = Keyword(1, 'Вася', 1)
-    # print ( k1.value )
-
-    pagesrepo = DbPageRepository()
-    p = PagesRepositoryWorker(pagesrepo)
-    p1 = p.getpagelastscandatenull()
-
-    print(p1)
-
-    sitesrepo = DbSiteReposytory()
-    s = SiteRepositoryWorker(sitesrepo)
-    s1 = s.getsitestorank()
-
-    print(s1)
-    # pp = Page( Url = 'http://lenta.ru/sitemap.xml', SiteID = 2, FoundDateTime = datetime.datetime.today() )
-    # print( pp.value )
-    # p.writepagestostore(pp)
-    # pp = Page(_id=3687, lastscandate=datetime.datetime.today() )
-    # p.updatepageinstore(pp)
+    pass
 
 
 if __name__ == '__main__':
