@@ -1,7 +1,7 @@
 import pymysql
 
 # import sqlite3
-import datetime
+# import datetime
 
 conn = pymysql.connect(
     host='localhost',
@@ -15,7 +15,7 @@ cursor = conn.cursor()
 
 
 class Entity:
-    """Класс для оздания метода представления сущностей"""
+    """Класс для создания метода представления сущностей"""
 
     def __init__(self):
         pass
@@ -31,7 +31,7 @@ class Person(Entity):
     def __init__(self, ID=0, Name=None):
         super(Entity, self).__init__()
         self.ID = ID
-        self.name = Name
+        self.Name = Name
 
 
 class Keyword(Entity):
@@ -102,8 +102,6 @@ class DbKeywordRepository:
         cursor.execute(sql, (personid,))
         result = cursor.fetchall()
         return result
-        # keywords = []
-        # return [item.value for item in keywords if item.value['PersonID'] == personid]
 
 
 class DbPersonRepository:
@@ -227,13 +225,13 @@ class DbPageRepository:
     def writepagestostore(self, page):
         sql = "insert into `Pages` (Url, SiteID, FoundDateTime) values (%s, %s, %s)"
         param = (page.value['Url'], page.value['SiteID'], page.value['FoundDateTime'])
-        cursor.execute(sql, (param))
+        cursor.execute(sql, param)
         conn.commit()
 
     def updatepageinstore(self, page):
         sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
         param = (page.value['LastScanDate'], page.value['ID'])
-        cursor.execute(sql, (param))
+        cursor.execute(sql, param)
         conn.commit()
 
 
@@ -246,7 +244,7 @@ class DbPersonPageRankRepository:
     def writeranktostore(self, personpagerank):
         sql = 'insert into `personpagerank` (personid, pageid, rank) values (%s, %s, %s)'
         param = (personpagerank.value['PersonID'], personpagerank.value['PageID'], personpagerank.value['Rank'])
-        cursor.execute(sql, (param))
+        cursor.execute(sql, param)
         conn.commit()
 
     def updaterankinstore(self, personpagerank):
