@@ -249,7 +249,7 @@ class DbPersonPageRankRepository:
         cursor.execute(sql, (param))
         conn.commit()
 
-    def updaterankinstore(self, page):
+    def updaterankinstore(self, personpagerank):
         pass
         '''
         sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
@@ -265,8 +265,8 @@ class PersonPageRankRepositoryWorker:
     def __init__(self, repository):
         self.repository = repository
 
-    def writeranktostore(self, page):
-        self.repository.writeranktostore(page)
+    def writeranktostore(self, personpagerank):
+        self.repository.writeranktostore(personpagerank)
 
 
 def main():

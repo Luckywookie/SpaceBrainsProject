@@ -193,7 +193,7 @@ def countstatforpage(cursor, html): #cursor = repository
     return personsdict
 
 
-def writerank(peronid, pageid, rank):
+def writerank(personid, pageid, rank):
     '''
     :param cursor: Курсор для взаимодействия с БД
     :param url: Ссылка для записи в БД
@@ -204,7 +204,7 @@ def writerank(peronid, pageid, rank):
     personpagerankwoker = repository.PersonPageRankRepositoryWorker(personpagerankrepository)
 
     print('Пишем Rank в БД')
-    personpagerank = repository.PersonPageRank(PersonID=pageid, PageID=pageid, Rank=rank)
+    personpagerank = repository.PersonPageRank(PersonID=personid, PageID=pageid, Rank=rank)
     # cursor.execute(sql, (url, site['ID'], datetime.datetime.today()))
     personpagerankwoker.writeranktostore(personpagerank)
     # cursor.execute(sql, (url, siteid, datetime.datetime.today()))
