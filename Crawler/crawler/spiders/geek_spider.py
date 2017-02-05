@@ -1,15 +1,8 @@
-# from scrapy.spiders import CrawlSpider, Rule, SitemapSpider
-# from scrapy.linkextractors import LinkExtractor
-# from scrapy.selector import Selector
-#
-# from crawler.items import BrainItemLoader, BrainItem
-
 import logging
 import six
 
-from scrapy.http import Request, XmlResponse
+from scrapy.http import Request
 from scrapy.utils.sitemap import Sitemap, sitemap_urls_from_robots
-from scrapy.utils.gz import gunzip, is_gzipped
 from bs4 import BeautifulSoup
 import re
 
@@ -18,24 +11,26 @@ from datetime import datetime
 import pymysql
 from urllib.parse import *
 
+from crawler.items import BrainedItem, BrainedItemLoader
+from scrapy.selector import Selector
+
 logger = logging.getLogger(__name__)
 
-sitemaps = []
-site_ids = {}
-explored_sites_ids = set()
-new_sitemaps = []
-keywords = []
-persons = []
-ranks = []
+# db = pymysql.connect(host='93.174.131.56', port=3306, user='oldfox', password='StrongPassword111',
+#                              db='ratepersons', charset='utf8mb4',
+#                              cursorclass=pymysql.cursors.DictCursor)
 
-db = pymysql.connect(host='localhost', user='root', password='',
-                             db='ratepersons', charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
+db = pymysql.connect(host='localhost', port=3306, user='root', password='',
+                     db='ratepersons', charset='utf8mb4',
+                     cursorclass=pymysql.cursors.DictCursor)
 cursor = db.cursor()
+site_ids = {}
 
 
-def get_sites_words():
-
+def get_new_sitemaps():
+    sitemaps = []
+    explored_sites_ids = set()
+    new_sitemaps = []
     cursor.execute('SELECT * FROM Sites')
     for site in cursor:
         print('Site: {}\nSite ID: {}'.format(site['Name'], site['ID']))
@@ -48,8 +43,8 @@ def get_sites_words():
     print(sitemaps)
 
     cursor.execute('SELECT * FROM Pages')
-    for page in cursor:
-        explored_sites_ids.add(page['SiteID'])
+    for p in cursor:
+        explored_sites_ids.add(p['SiteID'])
 
     print(explored_sites_ids)
 
@@ -62,69 +57,79 @@ def get_sites_words():
             explored_sites_ids.add(site_ids[site_name])
             db.commit()
 
-    print(new_sitemaps)
+    return new_sitemaps
 
-    cursor.execute('SELECT * FROM Keywords')
-    for word in cursor:
-        keywords.append(word)
 
-    print(keywords)
+def get_keywords():
+    keywords = {}
+    cursor.execute('select * from `Persons`')
+    personslist = cursor.fetchall()
+    for person in personslist:
+        query = "select * from `Keywords` where `Keywords`.`PersonID`=%s"
+        cursor.execute(query, (person['ID'],))
+        keywords[person['ID']] = []
 
-    cursor.execute('SELECT * FROM Persons')
+    cursor.execute('select * from `Keywords`')
+    keywordslist = cursor.fetchall()
+    for keyword in keywordslist:
+        if keyword['PersonID'] in keywords:
+            keywords[keyword['PersonID']].append(keyword['Name'])
+
+    return keywords
 
 
 class GeekSitemapSpider(SitemapSpider):
     name = 'geek_sitemap_spider'
-    get_sites_words()
 
-    sitemap_urls = new_sitemaps
+    sitemap_urls = get_new_sitemaps()
     old_sitemap_urls = []
     sitemap_follow = ['']
 
+    keywords = get_keywords()
+
     def parse(self, response):
-        url = urlparse(response.url)
-        print('page_url_from_parse: ' + url.geturl())
-        cursor = db.cursor()
+        print('Parsing... ', response.url)
+        selector = Selector(response)
+        l = BrainedItemLoader(BrainedItem(), selector)
+        l.add_value('url', response.url)
 
         sql = 'select * from `Pages` where `Pages`.`Url`=%s'
-        cursor.execute(sql, (url.geturl(), ))
-        p = cursor.fetchall()
+        cursor.execute(sql, (response.url,))
+        # sleep(0.1)
+        pages = cursor.fetchall()
         try:
-            page = p[0]
-            # print('PageID: ', page['ID'])
+            page = pages[0]
         except IndexError:
+            url = urlparse(response.url)
             sql = 'INSERT INTO Pages (Url, SiteID, FoundDateTime, LastScanDate) VALUES (%s, %s, %s, %s)'
             site_id = site_ids[url.netloc]
-            cursor.execute(sql, (url.geturl(), site_id, datetime.today(), datetime.today()))
+            cursor.execute(sql, (response.url, site_id, datetime.today(), datetime.today()))
             db.commit()
+            # sleep(0.5)
             sql = 'select * from `Pages` where `Pages`.`Url`=%s'
             cursor.execute(sql, (url.geturl(),))
-            p = cursor.fetchall()
-            page = p[0]
-            # print('PageID: ', page['ID'])
-
-        d = self.countstatforpage(cursor, response.text)
-        for pers, rank in d.items():
-            print(pers, rank)
-            sql = 'insert into `personpagerank` (personid, pageid, rank) values (%s, %s, %s)'
-            cursor.execute(sql, (pers, page['ID'], rank))
-
+            pages = cursor.fetchall()
+            page = pages[0]
         sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`Url`=%s'
-        cursor.execute(sql, (datetime.today(), url.geturl()))
+        cursor.execute(sql, (datetime.today(), response.url))
         db.commit()
-        print('\nNEXT PAGE\n')
 
-    # sitemap_rules = [('', 'parse')]
-    # sitemap_alternate_links = False
-
-    # def __init__(self, *a, **kw):
-    #     super(SitemapSpider, self).__init__(*a, **kw)
-    #     self._cbs = []
-    #     for r, c in self.sitemap_rules:
-    #         if isinstance(c, six.string_types):
-    #             c = getattr(self, c)
-    #         self._cbs.append((regex(r), c))
-    #     self._follow = [regex(x) for x in self.sitemap_follow]
+        for person in self.keywords:
+            rank = 0
+            print('PersonID: ', str(person))
+            for word in self.keywords[person]:
+                print(response.xpath('.').re(r'\b{}\b'.format(word)))
+                # print(len(response.xpath('.').re(r'\b{}\b'.format(word))))
+                # print(rank)
+                rank += len(response.xpath('.').re(r'\b{}\b'.format(word)))
+                # print(rank)
+            l.add_value('PersonID', str(person))
+            l.add_value('Rank', str(rank))
+            sql = 'insert into `personpagerank` (personid, pageid, rank) values (%s, %s, %s)'
+            cursor.execute(sql, (person, page['ID'], rank))
+            db.commit()
+        print('Parsed')
+        return l.load_item()
 
     def start_requests(self):
         for url in self.sitemap_urls:
@@ -133,19 +138,16 @@ class GeekSitemapSpider(SitemapSpider):
             yield Request(url, self._parse_oldsitemap)
 
     def _parse_sitemap(self, response):
-        cursor = db.cursor()
         if response.url.endswith('/robots.txt'):
             ur = urlparse(response.url, scheme='https')
             sql = 'UPDATE `Pages` SET `LastScanDate`=%s WHERE `Pages`.`Url` = %s'
             cursor.execute(sql, (datetime.today(), ur.geturl()))
-            db.commit()
             for url in sitemap_urls_from_robots(response.text, base_url=response.url):
-                print('sitemap_url_from_robots: ' + url)
+                # print('sitemap_url_from_robots: ' + url)
                 u = urlparse(url, scheme='https')
                 sql = 'INSERT INTO Pages (Url, SiteID, FoundDateTime, LastScanDate) VALUES (%s, %s, %s, %s)'
                 site_id = site_ids[urlparse(url).netloc]
                 cursor.execute(sql, (u.geturl(), site_id, datetime.today(), datetime.today()))
-                db.commit()
                 yield Request(url, callback=self._parse_sitemap)
         else:
             body = self._get_sitemap_body(response)
@@ -153,11 +155,10 @@ class GeekSitemapSpider(SitemapSpider):
                 logger.warning("Ignoring invalid sitemap: %(response)s",
                                {'response': response}, extra={'spider': self})
                 return
-
             s = Sitemap(body)
             if s.type == 'sitemapindex':
                 for loc in iterloc(s, self.sitemap_alternate_links):
-                    print('sitemapindex.loc: ' + loc)
+                    # print('sitemapindex.loc: ' + loc)
                     u = urlparse(loc, scheme='https')
                     sql = 'INSERT INTO Pages (Url, SiteID, FoundDateTime, LastScanDate) VALUES (%s, %s, %s, %s)'
                     site_id = site_ids[urlparse(loc).netloc]
@@ -177,70 +178,14 @@ class GeekSitemapSpider(SitemapSpider):
                     else:
                         cursor.execute(sql, (urlunparse(('https', u.netloc, '/', '', '', '')), site_id,
                                              datetime.today()))
-                    db.commit()
                     for r, c in self._cbs:
                         if r.search(loc):
                             yield Request(loc, callback=c)
                             break
+        db.commit()
 
     def _parse_oldsitemap(self, response):
         pass
-
-    def _get_sitemap_body(self, response):
-        """Return the sitemap body contained in the given response,
-        or None if the response is not a sitemap.
-        """
-        if isinstance(response, XmlResponse):
-            return response.body
-        elif is_gzipped(response):
-            return gunzip(response.body)
-        elif response.url.endswith('.xml'):
-            return response.body
-        elif response.url.endswith('.xml.gz'):
-            return gunzip(response.body)
-
-    def countstat(self, html, word):
-        '''
-        :param html: Страница для подсчета статистики.
-        :param word: Слово по которому подсчитываем статистику
-        :return: Количество раз упоминания слован на странице
-        '''
-        soup = BeautifulSoup(html, 'lxml')
-        c = r'\b{}\b'.format(word)
-        w = re.compile(c)
-        # print(w)
-        # print(w.pattern)
-        i = 0
-        for string in soup.stripped_strings:
-            if len(w.findall(repr(string))) > 0:
-                i += len(w.findall(repr(string)))
-        print('Rank {} -> {}'.format(word, i))
-        return i
-
-    def countstatforpage(self, cursor, html):
-        '''
-        :param cursor: Курсор для взаимодействия с БД
-        :param html: HTML страницы которую анализируем на предмет сколько раз встречается ключевые слова.
-        :return: Словаь по персонам с ID персоны и статистика для проанализируемой странице
-        '''
-        sql = "select * from `Persons`"
-        cursor.execute(sql)
-        personslist = cursor.fetchall()
-        personsdict = {}
-        for person in personslist:
-            lst = []
-            sql = "select * from `Keywords` where `Keywords`.`PersonID`=%s"
-            cursor.execute(sql, (person['ID'],))
-            keywordslist = cursor.fetchall()
-
-            for keyword in keywordslist:
-                # lst.append((html.count(keyword['Name']), keyword['Name']))
-                # lst.append(html.count(keyword['Name']))
-                lst.append(self.countstat(html, keyword['Name']))
-            s = sum(lst)
-            # print('rank ->', s)
-            personsdict[person['ID']] = s
-        return personsdict
 
 
 def regex(x):
@@ -252,7 +197,6 @@ def regex(x):
 def iterloc(it, alt=False):
     for d in it:
         yield d['loc']
-
         # Also consider alternate URLs (xhtml:link rel="alternate")
         if alt and 'alternate' in d:
             for l in d['alternate']:
