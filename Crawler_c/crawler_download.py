@@ -3,8 +3,38 @@ import requests
 import gzip
 import datetime
 import urllib.parse
+import urllib.robotparser
 import re
 import repository
+
+
+class PageDowloader:
+    error = None
+    page = None
+
+    def __init__(self, url):
+        self.url = url
+
+    def get_page(self):
+        try:
+            response = requests.get(self.url)
+            if response.status_code == requests.codes.ok:
+                if response.headers['Content-Type'] == 'application/octet-stream':
+                    self.page = gzip.decompress(response.content)
+                else:
+                    self.page = response.text
+            else:
+                response.raise_for_status()
+        except requests.exceptions.HTTPError:
+            print('HTTPError!!!')
+            self.error = 'httperror'
+            # updatelastscandate(page['ID'])
+            print(self.url)
+            # continue
+        except requests.exceptions.ConnectionError as err:
+            self.error = 'connectionerror'
+            print('Connetion Error ->', err)
+            print(self.url)
 
 
 def get_page(url):
@@ -52,6 +82,13 @@ def pagestowalk():
     pagesrepository = repository.DbPageRepository()
     pagewoker = repository.PagesRepositoryWorker(pagesrepository)
     result = pagewoker.getpagelastscandatenull()
+    return result
+
+
+def pagestowalk2():
+    pagesrepository = repository.DbPageRepository()
+    pagewoker = repository.PagesRepositoryWorker(pagesrepository)
+    result = pagewoker.getallpages()
     return result
 
 
@@ -166,6 +203,33 @@ def writerank(personid, pageid, rank):
     personpagerankwoker.writeranktostore(personpagerank)
 
 
+def geturlfrompage(url, html):
+    soup = BeautifulSoup(html, 'lxml')
+    alst = soup.select('a[href^="/"]')
+    print('Количество ссылок -> ', len(alst))
+    p = urllib.parse.urlparse(url)
+    r = urllib.robotparser.RobotFileParser()
+    rurl = urllib.parse.urlunparse((p.scheme, p.netloc, 'robots.txt', '', '', ''))
+    robot = get_page(rurl)
+    robot = robot.splitlines()
+    r.parse(robot)
+    print(p.netloc)
+    hrefs = set()
+    for link in alst:
+        path = link['href'].split('?')[0]
+        # print('PATH -> ', path)
+        u = urllib.parse.urljoin(url, path)
+        u1 = urllib.parse.urlparse(u)
+        if p.netloc == u1.netloc:
+            if r.can_fetch("*", u):
+                # print(u)
+                hrefs.add(u)
+                # print(u1.netloc)
+    # input('Нашли ссылки')
+    print(len(hrefs))
+    return hrefs
+
+
 def main():
     # cn = db_connect()
     # cur = cn.cursor()
@@ -180,18 +244,22 @@ def main():
 
         if len(pages) > 0:
             i = 0  # Cделал для отладки
+            pagesnotinsitemap = set()
             for page in pages:
-                try:
-                    html = get_page(page['Url'])
-                except requests.exceptions.HTTPError:
-                    print('HTTPError!!!')
-                    updatelastscandate(page['ID'])
-                    print(page)
-                    continue
-                except requests.exceptions.ConnectionError as err:
-                    print('Connetion Error ->', err)
-                    print(page)
-                    continue
+                p = PageDowloader(page['Url'])
+                p.get_page()
+                html = p.page
+                if p.error is not None:
+                    print(p.error)
+                    if p.error == 'httperror':
+                        print('HTTPError!!!')
+                        updatelastscandate(page['ID'])
+                        print(page)
+                        continue
+                    elif p.error == 'connectionerror':
+                        print('Connetion Error ->')
+                        print(page)
+                        continue
 
                 if (whatisurl(page['Url'])) == 'robots':
                     print('Записываем ссылку на sitemap в БД')
@@ -207,14 +275,71 @@ def main():
                         updatelastscandate(page['ID'])
                 else:  # Страница для анализа.
                     print(page['Url'])
+
+                    urlsfrompage = geturlfrompage(page['Url'], html)
+
+                    print('Найденные сылки -> ', urlsfrompage)
+                    print('Пересечение -> ', pagesnotinsitemap.intersection(urlsfrompage))
+
+                    pagesnotinsitemap.update(urlsfrompage)
+
+                    print('Новые ссылки {} -> {}'.format(len(pagesnotinsitemap), pagesnotinsitemap))
+
                     d = countstatforpage(html)
                     for pers, rank in d.items():
                         writerank(pers, page['ID'], rank)
+
                     updatelastscandate(page['ID'])
                 i += 1  # Cделал для отладки
                 print('Осталось обойти : {} страниц из {}'.format(len(pages) - i, len(pages)))  # Cделал для отладки
         else:
             break
+
+    print(len(pagesnotinsitemap))
+    print(pagesnotinsitemap)
+    input('SECOND STAGE')
+
+    # Наброски для версии 2.0
+    pages = pagestowalk2()
+    print(len(pages))
+    t = datetime.timedelta(hours=24)
+    for page in pages:
+        if datetime.datetime.today() - page['LastScanDate'] > t:
+            p = urllib.parse.urlparse(page['Url'])
+            if (p.path[1:].startswith('sitemap')) and (p.path[1:].endswith('xml') or p.path[1:].endswith('xml.gz')):
+                print(p.path[1:])
+                print(datetime.datetime.today() - page['LastScanDate'])
+                html = get_page(page['Url'])
+                urlstowrite = sitemapparse(html)
+                print(len(urlstowrite))
+                lst = [x['Url'] for x in pages]
+                for item in urlstowrite:
+                    if item not in lst:
+                        print(item)
+                        writeurl(item, page['SiteID'])
+                        updatelastscandate(page['ID'])
+                        # s1 = set(urlstowrite)
+                        # s2 = set([x['Url'] for x in pages])
+                        # print(s2 - s1)
+
+    # Наброски для версии 3.0
+    '''
+    pages = pagestowalk2()
+    print(len(pages))
+    newpagestowalk = set()
+    for page in pages:
+        html = get_page(page['Url'])
+        if (whatisurl(page['Url'])) == 'robots' or (whatisurl(page['Url'])) == 'sitemap':
+            continue
+        else:
+            print('Новые ссылки ->', newpagestowalk)
+            urlsfrompage = geturlfrompage(page['Url'],  html)
+            print('Найденные сылки -> ', urlsfrompage)
+            print('Пересечение -> ', newpagestowalk.intersection(urlsfrompage))
+            newpagestowalk.update(urlsfrompage)
+            print('Новые ссылки {} -> {}'.format(len(newpagestowalk), newpagestowalk))
+    '''
+
     repository.conn.close()
 
 
