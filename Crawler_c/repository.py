@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pymysql
 
 # import sqlite3
@@ -269,7 +271,10 @@ class PersonPageRankRepositoryWorker:
 
 def main():
     pass
-
+    k = DbKeywordRepository()
+    k1 = KeywordRepositoryWorker(k)
+    k2 = k1.getbypersonid(1)
+    print(k2)
 
 if __name__ == '__main__':
     main()
