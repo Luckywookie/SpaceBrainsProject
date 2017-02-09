@@ -210,9 +210,9 @@ def geturlfrompage(url, html):
     p = urllib.parse.urlparse(url)
     r = urllib.robotparser.RobotFileParser()
     rurl = urllib.parse.urlunparse((p.scheme, p.netloc, 'robots.txt', '', '', ''))
-    robot = get_page(rurl)
-    robot = robot.splitlines()
-    r.parse(robot)
+    r.set_url(rurl)
+    r.read()
+    # r.parse(robot)
     print(p.netloc)
     hrefs = set()
     for link in alst:
@@ -242,10 +242,14 @@ def main():
         pages = pagestowalk()
         print('Страниц для обхода ->', len(pages))
 
+        pagesset = {x['Url'] for x in pagestowalk2()}
+        print(len(pagesset))
+        print(pagesset)
         if len(pages) > 0:
             i = 0  # Cделал для отладки
-            pagesnotinsitemap = set()
+            # pagesnotinsitemap = set()
             for page in pages:
+                pagesset = {x['Url'] for x in pagestowalk2()}
                 p = PageDowloader(page['Url'])
                 p.get_page()
                 html = p.page
@@ -278,12 +282,13 @@ def main():
 
                     urlsfrompage = geturlfrompage(page['Url'], html)
 
-                    print('Найденные сылки -> ', urlsfrompage)
-                    print('Пересечение -> ', pagesnotinsitemap.intersection(urlsfrompage))
+                    print('Найденные сылки {} -> {}'.format(len(urlsfrompage), urlsfrompage))
+                    urlsfrompage.difference_update(pagesset)
+                    print('Ещё не обходили ссылки ->', urlsfrompage)
+                    print('Сылок для записи -> ', len(urlsfrompage))
 
-                    pagesnotinsitemap.update(urlsfrompage)
-
-                    print('Новые ссылки {} -> {}'.format(len(pagesnotinsitemap), pagesnotinsitemap))
+                    for url in urlsfrompage:
+                        writeurl(url, page['SiteID'])
 
                     d = countstatforpage(html)
                     for pers, rank in d.items():
@@ -293,52 +298,30 @@ def main():
                 i += 1  # Cделал для отладки
                 print('Осталось обойти : {} страниц из {}'.format(len(pages) - i, len(pages)))  # Cделал для отладки
         else:
-            break
 
-    print(len(pagesnotinsitemap))
-    print(pagesnotinsitemap)
-    input('SECOND STAGE')
+            # input('SECOND STAGE')
 
-    # Наброски для версии 2.0
-    pages = pagestowalk2()
-    print(len(pages))
-    t = datetime.timedelta(hours=24)
-    for page in pages:
-        if datetime.datetime.today() - page['LastScanDate'] > t:
-            p = urllib.parse.urlparse(page['Url'])
-            if (p.path[1:].startswith('sitemap')) and (p.path[1:].endswith('xml') or p.path[1:].endswith('xml.gz')):
-                print(p.path[1:])
-                print(datetime.datetime.today() - page['LastScanDate'])
-                html = get_page(page['Url'])
-                urlstowrite = sitemapparse(html)
-                print(len(urlstowrite))
-                lst = [x['Url'] for x in pages]
-                for item in urlstowrite:
-                    if item not in lst:
-                        print(item)
-                        writeurl(item, page['SiteID'])
-                        updatelastscandate(page['ID'])
-                        # s1 = set(urlstowrite)
-                        # s2 = set([x['Url'] for x in pages])
-                        # print(s2 - s1)
-
-    # Наброски для версии 3.0
-    '''
-    pages = pagestowalk2()
-    print(len(pages))
-    newpagestowalk = set()
-    for page in pages:
-        html = get_page(page['Url'])
-        if (whatisurl(page['Url'])) == 'robots' or (whatisurl(page['Url'])) == 'sitemap':
-            continue
-        else:
-            print('Новые ссылки ->', newpagestowalk)
-            urlsfrompage = geturlfrompage(page['Url'],  html)
-            print('Найденные сылки -> ', urlsfrompage)
-            print('Пересечение -> ', newpagestowalk.intersection(urlsfrompage))
-            newpagestowalk.update(urlsfrompage)
-            print('Новые ссылки {} -> {}'.format(len(newpagestowalk), newpagestowalk))
-    '''
+            # Наброски для версии 2.0
+            pages = pagestowalk2()
+            print(len(pages))
+            t = datetime.timedelta(hours=24)
+            for page in pages:
+                if datetime.datetime.today() - page['LastScanDate'] > t:
+                    p = urllib.parse.urlparse(page['Url'])
+                    if (p.path[1:].startswith('sitemap')) and (p.path[1:].endswith('xml') or p.path[1:].endswith('xml.gz')):
+                        print(p.path[1:])
+                        print(datetime.datetime.today() - page['LastScanDate'])
+                        html = get_page(page['Url'])
+                        urlstowrite = sitemapparse(html)
+                        print(len(urlstowrite))
+                        lst = [x['Url'] for x in pages]
+                        for item in urlstowrite:
+                            if item not in lst:
+                                print(item)
+                                writeurl(item, page['SiteID'])
+                                updatelastscandate(page['ID'])
+            else:
+                break
 
     repository.conn.close()
 
