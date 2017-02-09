@@ -28,28 +28,12 @@ class PageDowloader:
         except requests.exceptions.HTTPError:
             print('HTTPError!!!')
             self.error = 'httperror'
-            # updatelastscandate(page['ID'])
             print(self.url)
             # continue
         except requests.exceptions.ConnectionError as err:
             self.error = 'connectionerror'
             print('Connetion Error ->', err)
             print(self.url)
-
-
-def get_page(url):
-    """
-    :param url: Ссылка на скачиваемый ресурс/страницу
-    :return: HTML странца скаченная по ссылке
-    """
-    response = requests.get(url)
-    if response.status_code == requests.codes.ok:
-        if response.headers['Content-Type'] == 'application/octet-stream':
-            return gzip.decompress(response.content)
-        else:
-            return response.text
-    else:
-        response.raise_for_status()
 
 
 def findsitestorank():
@@ -181,9 +165,12 @@ def countstatforpage(html):
     for person in personslist:
         lst = []
         keywordslist = keywordworker.getbypersonid(person['ID'])  # GetKeywordByPersonID
-        for keyword in keywordslist:
-            lst.append(countstat(html, keyword['Name']))
-        s = sum(lst)
+        if len(keywordslist) > 0:
+            for keyword in keywordslist:
+                lst.append(countstat(html, keyword['Name']))
+            s = sum(lst)
+        else:
+            s = countstat(html, person['Name'])
         personsdict[person['ID']] = s
     return personsdict
 
@@ -204,29 +191,28 @@ def writerank(personid, pageid, rank):
 
 
 def geturlfrompage(url, html):
+    """
+    Извлекает ссылки со страницы в соответстви с правилами в robots.txt
+    :param url:
+    :param html:
+    :return:
+    """
     soup = BeautifulSoup(html, 'lxml')
     alst = soup.select('a[href^="/"]')
-    print('Количество ссылок -> ', len(alst))
     p = urllib.parse.urlparse(url)
     r = urllib.robotparser.RobotFileParser()
     rurl = urllib.parse.urlunparse((p.scheme, p.netloc, 'robots.txt', '', '', ''))
     r.set_url(rurl)
     r.read()
-    # r.parse(robot)
     print(p.netloc)
     hrefs = set()
     for link in alst:
         path = link['href'].split('?')[0]
-        # print('PATH -> ', path)
         u = urllib.parse.urljoin(url, path)
         u1 = urllib.parse.urlparse(u)
         if p.netloc == u1.netloc:
             if r.can_fetch("*", u):
-                # print(u)
                 hrefs.add(u)
-                # print(u1.netloc)
-    # input('Нашли ссылки')
-    print(len(hrefs))
     return hrefs
 
 
@@ -247,7 +233,6 @@ def main():
         print(pagesset)
         if len(pages) > 0:
             i = 0  # Cделал для отладки
-            # pagesnotinsitemap = set()
             for page in pages:
                 pagesset = {x['Url'] for x in pagestowalk2()}
                 p = PageDowloader(page['Url'])
@@ -299,8 +284,6 @@ def main():
                 print('Осталось обойти : {} страниц из {}'.format(len(pages) - i, len(pages)))  # Cделал для отладки
         else:
 
-            # input('SECOND STAGE')
-
             # Наброски для версии 2.0
             pages = pagestowalk2()
             print(len(pages))
@@ -308,10 +291,13 @@ def main():
             for page in pages:
                 if datetime.datetime.today() - page['LastScanDate'] > t:
                     p = urllib.parse.urlparse(page['Url'])
-                    if (p.path[1:].startswith('sitemap')) and (p.path[1:].endswith('xml') or p.path[1:].endswith('xml.gz')):
+                    if (p.path[1:].startswith('sitemap')) and \
+                            (p.path[1:].endswith('xml') or p.path[1:].endswith('xml.gz')):
                         print(p.path[1:])
                         print(datetime.datetime.today() - page['LastScanDate'])
-                        html = get_page(page['Url'])
+                        pagedownload = PageDowloader(page['Url'])
+                        pagedownload.get_page()
+                        html = pagedownload.page
                         urlstowrite = sitemapparse(html)
                         print(len(urlstowrite))
                         lst = [x['Url'] for x in pages]
