@@ -108,9 +108,9 @@ class DbKeywordRepository:
 
 class DbPersonRepository:
     """Класс репозитория Person работающий с БД"""
+
     def __init__(self):
         pass
-
 
     def getpersons(self):
         sql = "select * from `Persons`"
@@ -124,7 +124,6 @@ class SiteRepositoryWorker:
 
     def __init__(self, repository):
         self.repository = repository
-
 
     def getapersons(self):
         result = [item for item in self.repository.getpersites()]
@@ -275,6 +274,7 @@ def main():
     k1 = KeywordRepositoryWorker(k)
     k2 = k1.getbypersonid(1)
     print(k2)
+
 
 if __name__ == '__main__':
     main()
