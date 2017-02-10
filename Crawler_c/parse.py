@@ -22,11 +22,20 @@ def readrobots(file):
     :param file: Файл robots.txt для аналза и извечения ссылки на  sitemap
     :return: Возвращает ссылку на sitemap
     """
+    result = {}
     r = file.split('\n')
     for x in r:
         if x.startswith('Sitemap'):
-            return x.split(':', maxsplit=1)[-1].strip()
-
+            result['sitemap'] = x.split(':', maxsplit=1)[-1].strip()
+            #return x.split(':', maxsplit=1)[-1].strip()
+        elif x.startswith('Host'):
+            result['root'] = x.split(':', maxsplit=1)[-1].strip()
+            # return x.split(':', maxsplit=1)[-1].strip()
+    #print(result)
+    if result.get('sitemap') :
+        return result['sitemap']
+    elif result.get('root'):
+        return result['root']
 
 def sitemapparse(html):
     """
