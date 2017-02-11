@@ -210,7 +210,9 @@ def worker(repository_worker, pagesqueue):
                 writerank(repository_worker['personpagerank'], pers, item['ID'], rank)
             updatelastscandate(repository_worker['pages'], item['ID'])
 
-        print(item)
+        with threading.Lock():
+            print(threading.current_thread().name, item)
+        # print(item)
         pagesqueue.task_done()
 
 
@@ -227,8 +229,6 @@ def main():
         sites = findsitestorank(repository_worker['sites'])
         writerobotstodb(repository_worker['pages'], sites)
         pages = pagestowalk(repository_worker['pages'])
-
-        pagesset = {x['Url'] for x in allpages(repository_worker['pages'])}
 
         if len(pages) > 0:
             # i = 0  # Cделал для отладки
