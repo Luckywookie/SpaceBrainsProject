@@ -196,7 +196,6 @@ def worker(repository_worker, pagesqueue):
         else:  # Страница для анализа.
 
             urlsfrompage = parse.geturlfrompage(item['Url'], html)
-
             urlsfrompage.difference_update(pagesset)
 
             for url in urlsfrompage:
@@ -219,17 +218,14 @@ def main():
 
     while True:
         # db = dbconnection_init()
+
         repository_worker = reposytory_init()
-        # print('Находим сайты для обхода и записываем ссылку на robots.txt')
         sites = findsitestorank(repository_worker['sites'])
         writerobotstodb(repository_worker['pages'], sites)
-
         pages = pagestowalk(repository_worker['pages'])
-        # print('Страниц для обхода ->', len(pages))
 
         pagesset = {x['Url'] for x in allpages(repository_worker['pages'])}
-        # print(len(pagesset))
-        # print(pagesset)
+
         if len(pages) > 0:
             # i = 0  # Cделал для отладки
 
