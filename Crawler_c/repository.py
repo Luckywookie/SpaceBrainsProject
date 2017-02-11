@@ -5,6 +5,7 @@ import pymysql
 # import sqlite3
 # import datetime
 
+'''
 conn = pymysql.connect(
     host='localhost',
     user='root',  # Мои настройки для БД
@@ -14,6 +15,19 @@ conn = pymysql.connect(
     cursorclass=pymysql.cursors.DictCursor)
 
 cursor = conn.cursor()
+'''
+
+
+class DbRepositoryConnect:
+    def __init__(self):
+        self.conn = pymysql.connect(
+            host='localhost',
+            user='root',  # Мои настройки для БД
+            password='root',  # Мои настройки для БД
+            db='ratepersons',
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
+        self.cursor = self.conn.cursor()
 
 
 class Entity:
@@ -93,29 +107,30 @@ class FakeKeywordRepository:
         return [item.value for item in keywords if item.value['PersonID'] == personid]
 
 
-class DbKeywordRepository:
+class DbKeywordRepository(DbRepositoryConnect):
     """Класс репозитория Krywords работающий с БД"""
 
     def __init__(self):
-        pass
+        DbRepositoryConnect.__init__(self)
+
 
     def getkeywordbypersonid(self, personid):
         sql = "select * from `Keywords` where `Keywords`.`PersonID` = %s"
-        cursor.execute(sql, (personid,))
-        result = cursor.fetchall()
+        self.cursor.execute(sql, (personid,))
+        result = self.cursor.fetchall()
         return result
 
 
-class DbPersonRepository:
+class DbPersonRepository(DbRepositoryConnect):
     """Класс репозитория Person работающий с БД"""
 
     def __init__(self):
-        pass
+        DbRepositoryConnect.__init__(self)
 
     def getpersons(self):
         sql = "select * from `Persons`"
-        cursor.execute(sql)
-        result = cursor.fetchall()
+        self.cursor.execute(sql)
+        result = self.cursor.fetchall()
         return result
 
 
@@ -134,22 +149,22 @@ class SiteRepositoryWorker:
         return result
 
 
-class DbSiteReposytory:
+class DbSiteReposytory(DbRepositoryConnect):
     """Класс репозитория Site работающий с БД"""
 
     def __init__(self):
-        pass
+        DbRepositoryConnect.__init__(self)
 
     def getsites(self):
         sql = "select * from `Sites`"
-        cursor.execute(sql)
-        result = cursor.fetchall()
+        self.cursor.execute(sql)
+        result = self.cursor.fetchall()
         return result
 
     def getsitestorank(self):
         sql = 'select * from sites where id not in (select distinct siteid from pages)'
-        cursor.execute(sql)
-        result = cursor.fetchall()
+        self.cursor.execute(sql)
+        result = self.cursor.fetchall()
         return result
 
 
@@ -164,7 +179,7 @@ class PersonRepositoryWorker:
         return result
 
 
-class KeywordRepositoryWorker:
+class KeywordRepositoryWorker():
     """Класс реализует взаимодействие с репозиторием Keyword"""
 
     def __init__(self, repository):
@@ -199,54 +214,63 @@ class PagesRepositoryWorker:
         self.repository.updatepageinstore(page)
 
 
-class DbPageRepository:
+class DbPageRepository(DbRepositoryConnect):
     """Класс репозитория Page работающий с БД"""
 
     def __init__(self):
-        pass
+        DbRepositoryConnect.__init__(self)
 
     def getallpages(self):
         sql = "select * from `Pages`"
-        cursor.execute(sql)
-        result = cursor.fetchall()
+        self.cursor.execute(sql)
+        result = self.cursor.fetchall()
         return result
 
     def getsiteidfrompages(self):
         sql = "select distinct `siteid` from `Pages`"
-        cursor.execute(sql)
-        result = cursor.fetchall()
+        self.cursor.execute(sql)
+        result = self.cursor.fetchall()
         return result
 
     def getpagelastscandatenull(self):
         sql = "select * from `Pages` where `Pages`.`LastScanDate` is null"
-        cursor.execute(sql)
-        result = cursor.fetchall()
+        self.cursor.execute(sql)
+        result = self.cursor.fetchall()
         return result
 
     def writepagestostore(self, page):
-        sql = "insert into `Pages` (Url, SiteID, FoundDateTime) values (%s, %s, %s)"
+        sql = 'insert into `Pages` (Url, SiteID, FoundDateTime) values (%s, %s, %s)'
         param = (page.value['Url'], page.value['SiteID'], page.value['FoundDateTime'])
-        cursor.execute(sql, param)
-        conn.commit()
+        try:
+            self.cursor.execut(sql, param)
+            self.conn.commit()
+        except:
+            self.conn.rollback()
 
     def updatepageinstore(self, page):
         sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`ID` = %s'
         param = (page.value['LastScanDate'], page.value['ID'])
-        cursor.execute(sql, param)
-        conn.commit()
+        try:
+            self.cursor.execute(sql, param)
+            self.conn.commit()
+        except:
+            self.conn.rollback()
 
 
-class DbPersonPageRankRepository:
+class DbPersonPageRankRepository(DbRepositoryConnect):
     """Класс репозитория PersonPageRank работающий с БД"""
 
     def __init__(self):
-        pass
+        DbRepositoryConnect.__init__(self)
 
     def writeranktostore(self, personpagerank):
         sql = 'insert into `personpagerank` (personid, pageid, rank) values (%s, %s, %s)'
         param = (personpagerank.value['PersonID'], personpagerank.value['PageID'], personpagerank.value['Rank'])
-        cursor.execute(sql, param)
-        conn.commit()
+        try:
+            self.cursor.execute(sql, param)
+            self.conn.commit()
+        except:
+            self.conn.rollback()
 
     def updaterankinstore(self, personpagerank):
         pass
@@ -269,6 +293,25 @@ class PersonPageRankRepositoryWorker:
 
 
 def main():
+
+    db = DbRepositoryConnect()
+
+    repository_dict = {
+        'keyword': DbKeywordRepository(),
+        'sites': DbSiteReposytory(),
+        'pages': DbPageRepository(),
+        'person': DbPersonRepository(),
+        'personpagerank': DbPersonPageRankRepository()
+    }
+
+    repository_worker_dict = {
+        'keyword': KeywordRepositoryWorker(repository_dict['keyword']),
+        'sites': SiteRepositoryWorker(repository_dict['sites']),
+        'pages': PagesRepositoryWorker(repository_dict['pages']),
+        'person': PersonRepositoryWorker(repository_dict['person']),
+        'personpagerank': PersonPageRankRepositoryWorker(repository_dict['personpagerank'])
+    }
+
     k = DbKeywordRepository()
     k1 = KeywordRepositoryWorker(k)
     k2 = k1.getbypersonid(1)
