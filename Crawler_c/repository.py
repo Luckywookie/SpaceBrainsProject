@@ -269,7 +269,6 @@ class PersonPageRankRepositoryWorker:
 
 
 def main():
-    pass
     k = DbKeywordRepository()
     k1 = KeywordRepositoryWorker(k)
     k2 = k1.getbypersonid(1)
