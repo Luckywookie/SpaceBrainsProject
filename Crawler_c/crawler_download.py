@@ -35,6 +35,7 @@ def reposytory_init():
 
 
 class PageDowloader:
+    """"""
     error = None
     page = None
 
@@ -151,6 +152,7 @@ def writerank(personpagerankwoker, personid, pageid, rank):
 
 
 class DbThread(threading.Thread):
+    """Класс описывает поток для запуска"""
     def __init__(self, repository_worker, work_queue):
         threading.Thread.__init__(self)
         self.repository_woker = repository_worker
@@ -161,6 +163,12 @@ class DbThread(threading.Thread):
 
 
 def worker(repository_worker, pagesqueue):
+    """
+    Функция реализующая алготритм Краулера, для передачи многопоточного режима.
+    :param repository_worker:
+    :param pagesqueue:
+    :return:
+    """
     while True:
         item = pagesqueue.get()
         if item is None:
@@ -190,31 +198,27 @@ def worker(repository_worker, pagesqueue):
             print('Получаем ссылки из sitemap и записываем в БД')
             urlstowrite = parse.sitemapparse(html)
             for url in urlstowrite:
-
                 writeurl(repository_worker['pages'], url, item['SiteID'])
                 updatelastscandate(repository_worker['pages'], item['ID'])
         else:  # Страница для анализа.
-
             urlsfrompage = parse.geturlfrompage(item['Url'], html)
             urlsfrompage.difference_update(pagesset)
-
             for url in urlsfrompage:
                 writeurl(repository_worker['pages'], url, item['SiteID'])
-
             d = countstatforpage(repository_worker['person'], repository_worker['keyword'], html)
             for pers, rank in d.items():
                 writerank(repository_worker['personpagerank'], pers, item['ID'], rank)
-
             updatelastscandate(repository_worker['pages'], item['ID'])
 
         print(item)
         pagesqueue.task_done()
 
+
 def main():
     # cn = db_connect()
     # cur = cn.cursor()
 
-    num_worker_threads = 5
+    num_worker_threads = 10
 
     while True:
         # db = dbconnection_init()
@@ -235,7 +239,7 @@ def main():
             for i in range(num_worker_threads):
                 repository_worker = reposytory_init()
                 t = DbThread(repository_worker, pagesqueue)
-                # t.daemon = True
+                t.daemon = True
                 t.start()
                 threads.append(t)
 
@@ -248,58 +252,6 @@ def main():
                 pagesqueue.put(None)
             for t in threads:
                 t.join()
-
-            '''
-            for page in pages:
-                pagesset = {x['Url'] for x in allpages(repository_worker['pages'])}
-                p = PageDowloader(page['Url'])
-                p.get_page()
-                html = p.page
-                if p.error is not None:
-                    print(p.error)
-                    if p.error == 'httperror':
-                        print('HTTPError!!!')
-                        updatelastscandate(repository_worker['pages'], page['ID'])
-                        print(page)
-                        continue
-                    elif p.error == 'connectionerror':
-                        print('Connetion Error ->')
-                        print(page)
-                        continue
-
-                if (parse.whatisurl(page['Url'])) == 'robots':
-                    print('Записываем ссылку на sitemap в БД')
-                    sitemapurl = parse.readrobots(html)
-                    writeurl(repository_worker['pages'], sitemapurl, page['SiteID'])
-                    updatelastscandate(repository_worker['pages'], page['ID'])
-                elif (parse.whatisurl(page['Url'])) == 'sitemap':
-                    print('Получаем ссылки из sitemap и записываем в БД')
-                    urlstowrite = parse.sitemapparse(html)
-                    for url in urlstowrite:
-                        # print(url)
-                        writeurl(repository_worker['pages'], url, page['SiteID'])
-                        updatelastscandate(repository_worker['pages'], page['ID'])
-                else:  # Страница для анализа.
-                    # print(page['Url'])
-
-                    urlsfrompage = parse.geturlfrompage(page['Url'], html)
-
-                    # print('Найденные сылки {} -> {}'.format(len(urlsfrompage), urlsfrompage))
-                    urlsfrompage.difference_update(pagesset)
-                    # print('Ещё не обходили ссылки ->', urlsfrompage)
-                    # print('Сылок для записи -> ', len(urlsfrompage))
-
-                    for url in urlsfrompage:
-                        writeurl(repository_worker['pages'], url, page['SiteID'])
-
-                    d = countstatforpage(repository_worker['person'], repository_worker['keyword'], html)
-                    for pers, rank in d.items():
-                        writerank(repository_worker['personpagerank'], pers, page['ID'], rank)
-
-                    updatelastscandate(repository_worker['pages'], page['ID'])
-                i += 1  # Cделал для отладки
-                print('Осталось обойти : {} страниц из {}'.format(len(pages) - i, len(pages)))  # Cделал для отладки
-                '''
         else:
 
             # Наброски для версии 2.0
