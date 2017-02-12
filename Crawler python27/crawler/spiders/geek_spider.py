@@ -1,18 +1,14 @@
 from __future__ import absolute_import
 import logging
 import six
-
 from scrapy.http import Request
 from scrapy.utils.sitemap import Sitemap, sitemap_urls_from_robots
-from bs4 import BeautifulSoup
 import re
-
 from scrapy.spiders import SitemapSpider
 from datetime import datetime
 import pymysql
 from urlparse import *
 from urllib2 import *
-from urllib import *
 
 from crawler.items import BrainedItem, BrainedItemLoader
 from scrapy.selector import Selector
@@ -26,30 +22,26 @@ db = pymysql.connect(host=u'93.174.131.56', port=3306, user=u'oldfox', password=
 # db = pymysql.connect(host='localhost', port=3306, user='root', password='',
 #                      db='ratepersons', charset='utf8mb4',
 #                      cursorclass=pymysql.cursors.DictCursor)
+
 cursor = db.cursor()
 site_ids = {}
 
 
 def get_new_sitemaps():
+
     sitemaps = []
     explored_sites_ids = set()
     new_sitemaps = []
+
     cursor.execute(u'SELECT * FROM Sites')
     for site in cursor:
-        print u'Site: {}\nSite ID: {}'.format(site[u'Name'], site[u'ID'])
         sitemap_url = urlunparse((u'https', site[u'Name'], u'/robots.txt', u'', u'', u''))
         site_ids[site[u'Name']] = site[u'ID']
         sitemaps.append(sitemap_url)
-        print u'Sitemap URL: ' + sitemap_url
-
-    print site_ids
-    print sitemaps
 
     cursor.execute(u'SELECT * FROM Pages')
     for p in cursor:
         explored_sites_ids.add(p[u'SiteID'])
-
-    print explored_sites_ids
 
     for site_name in site_ids:
         if site_ids[site_name] not in explored_sites_ids:
@@ -64,7 +56,9 @@ def get_new_sitemaps():
 
 
 def get_keywords():
+
     keywords = {}
+
     cursor.execute(u'select * from `Persons`')
     personslist = cursor.fetchall()
     for person in personslist:
@@ -82,12 +76,12 @@ def get_keywords():
 
 
 class GeekSitemapSpider(SitemapSpider):
+
     name = u'geek_sitemap_spider'
 
     sitemap_urls = get_new_sitemaps()
     old_sitemap_urls = []
     sitemap_follow = [u'']
-
     keywords = get_keywords()
 
     def parse(self, response):

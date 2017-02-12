@@ -5,15 +5,12 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-# from bs4 import BeautifulSoup
 # import re
 from __future__ import absolute_import
 from datetime import datetime
 import pymysql
 from urlparse import *
 from urllib2 import *
-from urllib import *
-from time import sleep
 
 db = pymysql.connect(host=u'localhost', port=3306, user=u'root', password=u'',
                          db=u'ratepersons', charset=u'utf8mb4',
@@ -44,6 +41,7 @@ class BrainedItemPipeline(object):
 
     def process_item(self, item, spider):
         return item
+
         # print(item)
         # print(item['url'])
         # print(item['Rank'])
@@ -51,8 +49,8 @@ class BrainedItemPipeline(object):
 
         # sql = 'select * from `Pages` where `Pages`.`Url`=%s'
         # self.cursor.execute(sql, (item['url'],))
-        # # sleep(0.1)
         # pages = self.cursor.fetchall()
+
         # try:
         #     page = pages[0]
         # except IndexError:
@@ -66,17 +64,17 @@ class BrainedItemPipeline(object):
         #     self.cursor.execute(sql, (url.geturl(),))
         #     pages = self.cursor.fetchall()
         #     page = pages[0]
+
         # sql = 'update `Pages` set `LastScanDate`=%s where `Pages`.`Url`=%s'
         # self.cursor.execute(sql, (datetime.today(), item['url']))
         # self.db.commit()
-        # # sleep(0.5)
+
         # for pid in item['PersonID']:
         #     for rnk in item['Rank']:
         #         sql = 'insert into `personpagerank` (personid, pageid, rank) values (%s, %s, %s)'
         #         self.cursor.execute(sql, (pid, page['ID'], rnk))
         #         self.db.commit()
 
-                # sleep(0.5)
         # self.db.commit()
 
 # class MySQLStorePipeline(object):
