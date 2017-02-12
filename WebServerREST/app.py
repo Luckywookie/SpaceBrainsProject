@@ -6,13 +6,21 @@ from flask_restful import Api
 from flask_jwt import JWT
 from datetime import timedelta
 
+<<<<<<< Updated upstream
 from security import authenticate, identity, Login
 from resources.user import UserRegister, UserListView, User,\
     UserRestorePassword, UserChangePassword, UserStatus
 from resources.site import Site, SiteList, SiteCreate
 from resources.person import Person, PersonList, PersonCreate
-from resources.stats import Pages as Stats, StatList, Rank, RankList,\
-    RankDay, RankDayList, RankTime, RankTimeList
+from resources.stats import Pages as Stats, StatList, Rank, RankList
+=======
+from security import authenticate, identity
+from resources.user import UserRegister
+
+from resources.site import Site, SiteList
+from resources.person import Person, PersonList
+from resources.stats import Pages as Stats, StatList, Rank, RankList
+>>>>>>> Stashed changes
 from models.pages import PageModel
 from resources.keyword import Keyword, KeywordList, KeywordCreate
 
@@ -54,25 +62,14 @@ api.add_resource(KeywordCreate, '/keyword')
 api.add_resource(KeywordList, '/keywords')
 
 # Statistic urls
+api.add_resource(Stats, '/base_statistic/<int:id>')
 api.add_resource(StatList, '/base_statistic')
-api.add_resource(
-    Stats, '/base_statistic/<int:id>', '/base_statistic/<string:name>')
-api.add_resource(
-    Rank, '/rank_statistic/<int:id>', '/rank_statistic/<string:name>')
-api.add_resource(RankList, '/rank_statistic')
-api.add_resource(
-    RankDay,
-    '/day_statistic/<int:id>/<string:date>',
-    '/day_statistic/<string:name>/<string:date>'
-)
-api.add_resource(RankDayList, '/day_statistic/base/<string:date>')
-api.add_resource(
-    RankTime,
-    '/time_statistic/<int:id>/<string:date1>/<string:date2>',
-    '/time_statistic/<string:name>/<string:date1>/<string:date2>'
-)
-api.add_resource(
-    RankTimeList, '/time_statistic/base/<string:date1>/<string:date2>')
+api.add_resource(Rank, '/rank_statistic/<int:id>',
+                 '/rank_statistic/<int:id>/<string:date>',
+                 '/rank_statistic/<int:id>/<string:date1>/<string:date2>')
+api.add_resource(RankList, '/rank_statistic',
+                 '/rank_statistic/<string:date>',
+                 '/rank_statistic/<string:date1>/<string:date2>')
 
 if __name__ == '__main__':
     log = logging.getLogger(__name__)

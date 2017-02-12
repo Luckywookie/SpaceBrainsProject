@@ -2,7 +2,6 @@ from db import db
 from sqlalchemy.orm import synonym
 from models.site import SiteModel
 
-
 class PageModel(db.Model):
     __tablename__ = 'Pages'
 
@@ -12,6 +11,7 @@ class PageModel(db.Model):
     LastScanDate = db.Column(db.DateTime)
     SiteID = db.Column(db.Integer, db.ForeignKey('Sites.ID'))
 
+    # Site = db.relationship('SiteModel')
     id = synonym('ID')
     url = synonym('Url')
     found = synonym('FoundDateTime')
@@ -25,47 +25,17 @@ class PageModel(db.Model):
         self.scan = scan
         self.site_id = site_id
 
-    def json(self, permission):
-        def _query(self):
-            query = db.session.query(PageModel, SiteModel)
-            query = query.join(SiteModel, PageModel.site_id == SiteModel.id)
-            return query.filter(
-                SiteModel.id == PageModel.site_id,
-                SiteModel.admin == permission
-            )
-        return {
-            'id': self.site_id,
-            'site': SiteModel.query.filter_by(id=self.site_id).first().name,
-            'total_count': _query(self).filter(
-                PageModel.site_id == self.site_id
-            ).count(),
-            'total_count_not_round': _query(self).filter(
-                PageModel.site_id == self.site_id,
-                PageModel.scan is None
-            ).count(),
-            'total_count_round': _query(self).filter(
-                PageModel.site_id == self.site_id,
-                PageModel.scan is not None
-            ).count()
-        }
-
     @classmethod
-    def find_by_id(cls, id):
-        return cls.query.filter_by(site_id=id).first()
-
-    @classmethod
-    def find_by_name(cls, name):
-        siteid = SiteModel.query.filter_by(name=name).first()
-        if siteid:
-            return cls.query.filter_by(site_id=siteid.id).first()
-
-
-class SiteModel_for_json(SiteModel):
-    def json(self):
-        return {
-            'id': self.id,
-            'site': SiteModel.query.filter_by(id=self.id).first().name,
-            'total_count': 0,
-            'total_count_not_round': 0,
-            'total_count_round': 0
-        }
+    def find_by_id(cls, id, permission):
+        result = SiteModel.query.filter_by(id=id, admin=permission).first()
+        if result:
+            total_count = cls.query.filter(PageModel.site_id == result.id).count()
+            total_count_not_round = cls.query.filter(PageModel.site_id == result.id, PageModel.scan == None).count()
+            total_count_round = cls.query.filter(PageModel.site_id == result.id, PageModel.scan != None).count()
+            return {
+                'id': result.id,
+                'site': result.name,
+                'total_count': total_count if total_count else 0,
+                'total_count_not_round': total_count_not_round if total_count_not_round else 0,
+                'total_count_round': total_count_round if total_count_round else 0
+            }
