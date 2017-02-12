@@ -50,6 +50,7 @@ namespace DataAccess.Repositories
         {
             if (site == null)
                 return;
+            site.AdminId = GetCurrentUserId();
             _context.Entry(site).State = System.Data.Entity.EntityState.Modified;
             _context.SaveChanges();
         }

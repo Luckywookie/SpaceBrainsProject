@@ -44,6 +44,7 @@ namespace DataAccess.Repositories
         {
             if (person == null)
                 return;
+            person.AdminId = GetCurrentUserId();
             _context.Entry(person).State = System.Data.Entity.EntityState.Modified;
             _context.SaveChanges();
         }
