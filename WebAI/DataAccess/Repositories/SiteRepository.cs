@@ -46,7 +46,7 @@ namespace DataAccess.Repositories
 
         
 
-        public void ChangeSite(Site site)
+        public void EditSite(Site site)
         {
             if (site == null)
                 return;

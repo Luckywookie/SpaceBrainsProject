@@ -1,0 +1,53 @@
+﻿@model IEnumerable<WebAI.Models.Account.UserViewModel>
+@{
+    ViewBag.Title = "UsersList";
+    //int roleId = ViewBag.RoleId;
+}
+
+@Html.Partial("_Menu")
+@*@if (roleId == (int)Utility.enums.RolesEnum.Root)
+{
+    @Html.Partial("_SuperAIMenu")
+}
+else
+{
+    @Html.Partial("_AIMenu")
+}*@
+
+<div class="col-md-8">
+    <div style="text-align:center">
+        <h3> Справочник "Пользователи"</h3>
+        <p>Для редактирования и удаления записи - нажмите на неё</p>
+    </div>
+    <hr />
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">Список "Пользователей"</div>
+        @*<div class="panel-body">
+                <p>Для редактирования и удаления записи - нажмите на неё</p>
+            </div>*@
+        <!-- List group -->
+
+        <table class="table table-bordered">
+            <tr>
+                <th>Id</th>
+                <th>Имя</th>
+                <th>Логин</th>
+                <th>Email</th>
+            </tr>
+            @foreach( var user in Model)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.Name</td>
+                    <td>@user.Login</td>
+                    <td>@user.Email</td>
+                </tr>
+            }
+        </table>
+    </div>
+    <a class="btn btn-info" href="@Url.Action("AddUser", "Account")">Добавить нового пользователя</a>
+</div>
+
+
+

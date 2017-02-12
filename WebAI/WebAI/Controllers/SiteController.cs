@@ -59,7 +59,7 @@ namespace WebAI.Controllers
         public ActionResult Edit (SiteViewModel siteToChange)
         {
             var siteDTO = _mapper.Map<SiteViewModel, SiteDTO>(siteToChange);
-            _siteService.ChangeSite(siteDTO);
+            _siteService.EditSite(siteDTO);
             return RedirectToAction("Index");
         }
 

@@ -96,7 +96,7 @@ namespace WebAI.Controllers
         
 
         [HttpGet]
-        public ActionResult ChangePerson(int id)
+        public ActionResult EditPerson(int id)
         {
             var personDTO = _personService.GetPersonById(id);
             return View(_mapper.Map<PersonDTO, PersonViewModel>(personDTO));
@@ -104,10 +104,10 @@ namespace WebAI.Controllers
 
 
         [HttpPost]
-        public ActionResult ChangePerson(PersonViewModel personToChange)
+        public ActionResult EditPerson(PersonViewModel personToChange)
         {
             var personDTO = _mapper.Map<PersonViewModel, PersonDTO>(personToChange);
-            _personService.ChangePerson(personDTO);
+            _personService.EditPerson(personDTO);
             return RedirectToAction("PersonList");
         }
 
@@ -134,7 +134,7 @@ namespace WebAI.Controllers
         }
 
         [HttpGet]
-        public ActionResult ChangeKeyWord(int id)
+        public ActionResult EditKeyWord(int id)
         {
             var keyWordDTO = _personService.GetKeyWordById(id);
             return View(_mapper.Map<KeyWordDTO, KeyWordViewModel>(keyWordDTO));
@@ -142,11 +142,11 @@ namespace WebAI.Controllers
 
 
         [HttpPost]
-        public ActionResult ChangeKeyWord(KeyWordViewModel keyWordToChange)
+        public ActionResult EditKeyWord(KeyWordViewModel keyWordToChange)
         {
             PersonIdRemember.Id = keyWordToChange.PersonId;
             var keyWordDTO = _mapper.Map<KeyWordViewModel, KeyWordDTO>(keyWordToChange);
-            _personService.ChangeKeyWord(keyWordDTO);
+            _personService.EditKeyWord(keyWordDTO);
             return RedirectToAction("KeyWordList");
         }
 

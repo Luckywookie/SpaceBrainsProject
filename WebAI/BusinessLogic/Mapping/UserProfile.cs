@@ -20,6 +20,7 @@ namespace BusinessLogic.Mapping
                 .ForMember(dest => dest.Admin, opt => opt.Ignore())
                 .ForMember(dest => dest.Role, opt => opt.Ignore())
                 .ForMember(dest => dest.Persons, opt => opt.Ignore())
+                .ForMember(dest => dest.Users, opt => opt.Ignore())
                 .ForMember(dest => dest.Sites, opt => opt.Ignore());
         }
     }

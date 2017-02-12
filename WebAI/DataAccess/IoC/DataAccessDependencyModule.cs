@@ -31,9 +31,14 @@ namespace DataAccess.IoC
             builder.RegisterType<AuthenticationRepository>().As<IAuthenticationRepository>()
                 .WithParameter((pi, c) => pi.Name == "context", (pi, c) => (WebAIDbContext)c.ResolveNamed<DbContext>("DataContext"))
                 .InstancePerRequest();
+
             builder.RegisterType<CrawlerRepository>().As<ICrawlerRepository>()
             .WithParameter((pi, c) => pi.Name == "context", (pi, c) => (WebAIDbContext)c.ResolveNamed<DbContext>("DataContext"))
             .InstancePerRequest();
+
+            builder.RegisterType<UserRepository>().As<IUserRepository>()
+               .WithParameter((pi, c) => pi.Name == "context", (pi, c) => (WebAIDbContext)c.ResolveNamed<DbContext>("DataContext"))
+               .InstancePerRequest();
         }
     }
 }

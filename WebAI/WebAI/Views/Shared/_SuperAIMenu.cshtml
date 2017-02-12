@@ -6,10 +6,10 @@
             <li role="presentation">
                 @Html.ActionLink("Управление справочниками", "Index", "Home")
                 <ul>
-                    <li role="presentation">@Html.ActionLink("Пользователи", "Index", "Site")</li>
+                    <li role="presentation">@Html.ActionLink("Администраторы", "UsersList", "User", new { id = (int)Utility.enums.RolesEnum.Root }, null)</li>
                 </ul>
             </li>
-            <li role="presentation">@Html.ActionLink("Статистика краулера", "Index", "CrawlerStats")</li>
+            <li role="presentation">@Html.ActionLink("Статистика краулера", "Index", "CrawlerStats", new { id = (int)Utility.enums.RolesEnum.Root }, null)</li>
             <li role="presentation">@Html.ActionLink("Управление Аккаунтом", "Index", "CrawlerStats")</li>
         </ul>
     </div>

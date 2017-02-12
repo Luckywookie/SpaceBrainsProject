@@ -15,6 +15,6 @@ namespace BusinessLogic.Services.Base
         void DeleteSiteById(int id);
         
         void AddSite(SiteDTO siteDTO);
-        void ChangeSite(SiteDTO siteDTO);
+        void EditSite(SiteDTO siteDTO);
     }
 }

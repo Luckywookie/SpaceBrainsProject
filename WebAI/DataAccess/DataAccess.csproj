@@ -102,10 +102,12 @@
     <Compile Include="Repositories\Base\IAuthenticationRepository.cs" />
     <Compile Include="Repositories\Base\IPersonRepository.cs" />
     <Compile Include="Repositories\Base\ISiteRepository.cs" />
+    <Compile Include="Repositories\Base\IUserRepository.cs" />
     <Compile Include="Repositories\CrawlerRepository.cs" />
     <Compile Include="Repositories\Base\ICrawlerRepository.cs" />
     <Compile Include="Repositories\PersonRepository.cs" />
     <Compile Include="Repositories\SiteRepository.cs" />
+    <Compile Include="Repositories\UserRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

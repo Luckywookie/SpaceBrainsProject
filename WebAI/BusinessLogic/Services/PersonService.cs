@@ -75,10 +75,10 @@ namespace BusinessLogic.Services
             _personRepository.AddPerson(person);
         }
 
-        public void ChangePerson(PersonDTO personDTO)
+        public void EditPerson(PersonDTO personDTO)
         {
 
-            _personRepository.ChangePerson(_mapper.Map<PersonDTO, Person>(personDTO));
+            _personRepository.EditPerson(_mapper.Map<PersonDTO, Person>(personDTO));
         }
 
         public void AddKeyWord(KeyWordDTO keyWordDTO)
@@ -87,10 +87,10 @@ namespace BusinessLogic.Services
             _personRepository.AddKeyWord(_mapper.Map<KeyWordDTO, KeyWord>(keyWordDTO));
         }
 
-        public void ChangeKeyWord(KeyWordDTO keyWordDTO)
+        public void EditKeyWord(KeyWordDTO keyWordDTO)
         {
 
-            _personRepository.ChangeKeyWord(_mapper.Map<KeyWordDTO, KeyWord>(keyWordDTO));
+            _personRepository.EditKeyWord(_mapper.Map<KeyWordDTO, KeyWord>(keyWordDTO));
         }
 
         

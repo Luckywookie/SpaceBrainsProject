@@ -180,19 +180,22 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\PersonController.cs" />
     <Compile Include="Controllers\SiteController.cs" />
+    <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Infrastructure\AutoMapperConfig.cs" />
     <Compile Include="Infrastructure\IoC\AutofacConfig.cs" />
-    <Compile Include="Infrastructure\Mapping\Account\UserRegistrationProfile.cs" />
+    <Compile Include="Infrastructure\Mapping\Account\UserViewProfile.cs" />
     <Compile Include="Infrastructure\Mapping\KeyWordViewProfile.cs" />
     <Compile Include="Infrastructure\Mapping\PersonViewProfile.cs" />
     <Compile Include="Infrastructure\Mapping\SiteViewProfile.cs" />
     <Compile Include="Models\Account\AccountManagerViewModel.cs" />
     <Compile Include="Models\Account\ChangePasswordViewModel.cs" />
+    <Compile Include="Models\Account\EditUserViewModel.cs" />
     <Compile Include="Models\Account\LogInViewModel.cs" />
     <Compile Include="Models\Account\UserRegistrationViewModel.cs" />
+    <Compile Include="Models\Account\UserViewModel.cs" />
     <Compile Include="Models\Base\BaseModel.cs" />
     <Compile Include="Models\CrawlerStatsViewModel.cs" />
     <Compile Include="Models\KeyWordViewModel.cs" />
@@ -261,8 +264,8 @@
     <Content Include="Views\Person\_KeyWordList.cshtml" />
     <Content Include="Views\Person\AddKeyWord.cshtml" />
     <Content Include="Views\Person\AddPerson.cshtml" />
-    <Content Include="Views\Person\ChangePerson.cshtml" />
-    <Content Include="Views\Person\ChangeKeyWord.cshtml" />
+    <Content Include="Views\Person\EditPerson.cshtml" />
+    <Content Include="Views\Person\EditKeyWord.cshtml" />
     <Content Include="Views\Site\Add.cshtml" />
     <Content Include="Views\Account\LogIn.cshtml" />
     <Content Include="Views\Account\_CurrentUser.cshtml" />
@@ -272,6 +275,8 @@
     <Content Include="Views\Account\ChangePassword.cshtml" />
     <Content Include="Views\CrawlerStats\Index.cshtml" />
     <Content Include="Views\CrawlerStats\_crawlerStats.cshtml" />
+    <Content Include="Views\User\UsersList.cshtml" />
+    <Content Include="Views\Shared\_Menu.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

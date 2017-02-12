@@ -13,8 +13,8 @@ namespace DataAccess.Repositories.Base
         void AddKeyWord(KeyWord keyWord);
         
 
-        void ChangePerson(Person person);
-        void ChangeKeyWord(KeyWord keyword);
+        void EditPerson(Person person);
+        void EditKeyWord(KeyWord keyword);
         
 
         void DeleteKeyWordById(int id);

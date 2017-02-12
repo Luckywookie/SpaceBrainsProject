@@ -1,0 +1,13 @@
+﻿
+@{ 
+    int roleId = ViewBag.RoleId;
+}
+
+@if (roleId == (int)Utility.enums.RolesEnum.Root)
+{
+    @Html.Partial("_SuperAIMenu")
+}
+else
+{
+    @Html.Partial("_AIMenu")
+}

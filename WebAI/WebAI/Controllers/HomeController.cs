@@ -28,8 +28,9 @@ namespace WebAI.Controllers
 
         public ActionResult Index()
         {
-            
-            return View(_authenticationService.IsSuperAdmin(CurrentAdminData.Name));
+            bool isSuperAdmin = _authenticationService.IsSuperAdmin(CurrentAdminData.Name);
+            ViewBag.IsSuperAdmin = isSuperAdmin;
+            return View(isSuperAdmin);
         }
 
  

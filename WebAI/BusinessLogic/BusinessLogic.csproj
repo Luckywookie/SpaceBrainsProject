@@ -99,9 +99,11 @@
     <Compile Include="Services\Base\ICrawlerStatsService.cs" />
     <Compile Include="Services\Base\IPersonService.cs" />
     <Compile Include="Services\Base\ISiteService.cs" />
+    <Compile Include="Services\Base\IUserService.cs" />
     <Compile Include="Services\CrawlerStatsService.cs" />
     <Compile Include="Services\PersonService.cs" />
     <Compile Include="Services\SiteService.cs" />
+    <Compile Include="Services\UserService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataAccess\DataAccess.csproj">

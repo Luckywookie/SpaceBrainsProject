@@ -10,6 +10,7 @@ using System.Threading;
 using AutoMapper;
 using BusinessLogic.DTO.Account;
 using Utility.Helpers;
+using Utility.enums;
 
 namespace WebAI.Controllers
 {
@@ -27,6 +28,13 @@ namespace WebAI.Controllers
         }
 
         
+        public ActionResult AddUser()
+        {
+            if (IsCurrentUserSuperAdmin())
+                return RedirectToAction("AdminRegistration");
+            else
+                return RedirectToAction("UserRegistration");
+        }
         [HttpGet]
         public ActionResult AdminRegistration()
         {
@@ -43,7 +51,7 @@ namespace WebAI.Controllers
             {
                 _authenticationService.AdminRegistration(_mapper.Map<UserRegistrationViewModel, UserDTO>(userRegistrationViewModel));
                 
-                return RedirectToAction("Index", "Home", _authenticationService.IsSuperAdmin(GetCurrentUserName()));
+                return RedirectToAction("UsersList", "User", new { id = (int)RolesEnum.Root });
             }
             else
                 return View("UserRegistration", userRegistrationViewModel);
@@ -69,7 +77,7 @@ namespace WebAI.Controllers
             {
                 _authenticationService.UserRegistration(_mapper.Map<UserRegistrationViewModel, UserDTO>(userRegistrationViewModel), adminId);
                 
-                return RedirectToAction("Index", "Home", _authenticationService.IsSuperAdmin(GetCurrentUserName()));
+                return RedirectToAction("UsersList", "User", new { id = (int)RolesEnum.Admin });
             }
             else
                 return View("UserRegistration", userRegistrationViewModel);
@@ -163,6 +171,11 @@ namespace WebAI.Controllers
         int GetCurrentAdminId(string login)
         {
             return _authenticationService.GetAdminIdByLogin(login);
+        }
+
+        bool IsCurrentUserSuperAdmin()
+        {
+            return _authenticationService.IsSuperAdmin(GetCurrentUserName());
         }
 
     }

@@ -8,14 +8,22 @@ using WebAI.Models.Account;
 
 namespace WebAI.Infrastructure.Mapping.Account
 {
-    public class UserRegistrationProfile
+    public class UserViewProfile
         : Profile
     {
-        public UserRegistrationProfile()
+        public UserViewProfile()
         {
             CreateMap<UserRegistrationViewModel, UserDTO>()
                 .ForMember(dest => dest.RoleId, opt => opt.Ignore())
                 .ForMember(dest => dest.AdminId, opt => opt.Ignore());
+
+            CreateMap<UserDTO, UserViewModel>();
+
+            CreateMap<UserDTO, EditUserViewModel>();
+
+            CreateMap<EditUserViewModel, UserDTO>();
+
+
         }
     }
 }

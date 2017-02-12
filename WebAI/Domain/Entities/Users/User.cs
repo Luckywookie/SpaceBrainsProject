@@ -42,7 +42,7 @@ namespace Domain.Entities.Users
         [ForeignKey("RoleId")]
         public virtual Role Role { get; set; }
 
-        //public virtual ICollection<User> Users { get; set; }
+        public virtual ICollection<User> Users { get; set; }
         public virtual ICollection<Person> Persons { get; set; }
         public virtual ICollection<Site> Sites { get; set; }
     }

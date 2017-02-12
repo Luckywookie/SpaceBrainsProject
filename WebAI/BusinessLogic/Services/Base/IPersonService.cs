@@ -22,9 +22,9 @@ namespace BusinessLogic.Services.Base
          void DeleteKeyWordById(int id);
 
          void AddPerson(PersonDTO personDTO);
-         void ChangePerson(PersonDTO personDTO);
+         void EditPerson(PersonDTO personDTO);
 
          void AddKeyWord(KeyWordDTO keyWordDTO);
-         void ChangeKeyWord(KeyWordDTO keyWordDTO);
+         void EditKeyWord(KeyWordDTO keyWordDTO);
     }
 }

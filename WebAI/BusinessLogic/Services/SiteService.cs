@@ -30,9 +30,9 @@ namespace BusinessLogic.Services
             _siteRepository.AddSite(site);
         }
 
-        public void ChangeSite(SiteDTO siteDTO)
+        public void EditSite(SiteDTO siteDTO)
         {
-            _siteRepository.ChangeSite(_mapper.Map<SiteDTO, Site>(siteDTO));
+            _siteRepository.EditSite(_mapper.Map<SiteDTO, Site>(siteDTO));
         }
 
         public void DeleteSiteById(int id)

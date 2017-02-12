@@ -40,7 +40,7 @@ namespace DataAccess.Repositories
             }
         }
         
-        public  void ChangePerson(Person person)
+        public  void EditPerson(Person person)
         {
             if (person == null)
                 return;
@@ -49,7 +49,7 @@ namespace DataAccess.Repositories
             _context.SaveChanges();
         }
 
-        public void ChangeKeyWord(KeyWord keyword)
+        public void EditKeyWord(KeyWord keyword)
         {
             if (keyword == null)
                 return;
