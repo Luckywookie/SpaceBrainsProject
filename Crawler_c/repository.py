@@ -242,7 +242,7 @@ class DbPageRepository(DbRepositoryConnect):
         sql = 'insert into `Pages` (Url, SiteID, FoundDateTime) values (%s, %s, %s)'
         param = (page.value['Url'], page.value['SiteID'], page.value['FoundDateTime'])
         try:
-            self.cursor.execut(sql, param)
+            self.cursor.execute(sql, param)
             self.conn.commit()
         except:
             self.conn.rollback()
