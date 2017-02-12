@@ -1,15 +1,28 @@
 ﻿
-<div class="col-md-3" style="background-color:lightgray; padding: 120px 30px; height: 500px">
-    <ul>
-        <li>
-            @Html.ActionLink("Управление справочниками", "Index", "Home")
-            <ul>
-               <li>@Html.ActionLink("Личности", "PersonList", "Person")</li>
-               <li>@Html.ActionLink("Ключевые слова", "KeyWordList", "Person")</li>
-               <li>@Html.ActionLink("Сайты", "Index", "Site")</li>
-            </ul>
-        </li>
-        <li>@Html.ActionLink("Добавить пользователя", "UserRegistration", "Account")</li>
-    </ul>
+<div class="col-md-4" @*style="background-color:lightgray; padding: 120px 30px; height: 500px"*@>
+    <div class="jumbotron" style="height: 400px">
+        <ul class="nav nav-pills nav-stacked">
+            <li role="presentation">
+                @Html.ActionLink("Управление справочниками", "Index", "Home")
+                <ul>
+                    <li role="presentation">@Html.ActionLink("Личности", "PersonList", "Person")</li>
+                    <li role="presentation">@Html.ActionLink("Ключевые слова", "KeyWordList", "Person")</li>
+                    <li role="presentation">@Html.ActionLink("Сайты", "Index", "Site")</li>
+                </ul>
+            </li>
+            <li role="presentation">@Html.ActionLink("Добавить пользователя", "UserRegistration", "Account")</li>
+        </ul>
+        @*<ul>
+            <li>
+                @Html.ActionLink("Управление справочниками", "Index", "Home")
+                <ul>
+                    <li>@Html.ActionLink("Личности", "PersonList", "Person")</li>
+                    <li>@Html.ActionLink("Ключевые слова", "KeyWordList", "Person")</li>
+                    <li>@Html.ActionLink("Сайты", "Index", "Site")</li>
+                </ul>
+            </li>
+            <li>@Html.ActionLink("Добавить пользователя", "UserRegistration", "Account")</li>
+        </ul>*@
+    </div>
 </div>
 
