@@ -220,7 +220,7 @@ def main():
     # cn = db_connect()
     # cur = cn.cursor()
 
-    num_worker_threads = 10
+    num_worker_threads = 4
 
     while True:
         # db = dbconnection_init()
