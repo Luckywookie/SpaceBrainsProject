@@ -92,15 +92,20 @@ class User(Resource):
 
     @jwt_required()
     def delete(self, id):
+        return 400
+        '''
+        if current_identity.role is not (1, 2):
+            return: {
+                'message': 'You have no permissions for that!'
+            }, 403
+
         current_user = current_identity.id
         if id:
             user = UserModel.find_by_id(id)
             if user and user.admin == current_user:
-                user.admin = user.admin
-                user.role = user.role
                 user.delete_user()
             return {'message': 'User deleted'}, 200
-        return {'message': 'No such user'}, 404
+        return {'message': 'No such user'}, 404'''
 
     @jwt_required()
     def put(self, id):

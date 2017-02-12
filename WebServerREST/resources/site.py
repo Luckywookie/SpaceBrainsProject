@@ -5,7 +5,7 @@ from models.pages import PageModel
 
 
 class Site(Resource):
-    parser = reqparse.RequestParser()
+    parser = reqparse.RequestParser()  # TODO: merge parsers
     parser.add_argument(
         'name',
         type=str,
@@ -24,27 +24,15 @@ class Site(Resource):
         return {'message': 'Site not found'}, 404
 
     @jwt_required()
-    def post(self, name):
-        if SiteModel.find_by_name(name):
-            return {
-                'message': "A site with name '{}' already exists.".format(name)
-            }, 400
-
-        current_user = current_identity.id
-        site = SiteModel(name=name, admin=current_user)
-        try:
-            site.save_to_db()
-        except:
-            return {"message": "An error occurred creating the site."}, 500
-
-        return site.json(), 201
-
-    @jwt_required()
     def delete(self, id=None, name=None):
+        if current_identity.role is not 2:
+            return {'message': 'You have no permissions for that!'}, 403
+
         if id:
             site = SiteModel.find_by_id(id)
         else:
             site = SiteModel.find_by_name(name)
+
         if site:
             site.delete_from_db()
             return {'message': 'Site deleted.'}, 200
@@ -52,6 +40,9 @@ class Site(Resource):
 
     @jwt_required()
     def put(self, id):
+        if current_identity.role is not 2:
+            return {'message': 'You have no permissions for that!'}, 403
+
         data = Site.parser.parse_args()
         site = SiteModel.find_by_id(id)
         current_user = current_identity.id
@@ -65,6 +56,34 @@ class Site(Resource):
             site = SiteModel(name=data['name'], admin=current_user)
             site.save_to_db()
             return site.json(), 201
+
+
+class SiteCreate(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument(
+        'name',
+        type=str,
+        required=True,
+        help="This field cannot be left blank!"
+    )
+
+    @jwt_required()
+    def post(self):
+        if current_identity.role is not 2:
+            return {'message': 'You have no permissions for that!'}, 403
+
+        data = SiteCreate.parser.parse_args()
+        current_user = current_identity.id
+        site = SiteModel(name=data['name'], admin=current_user)
+
+        if SiteModel.find_by_name(data['name']):
+            return {
+                'message': "A site with name '{}' already exists.".format(
+                    data['name'])
+            }, 400
+
+        site.save_to_db()
+        return site.json(), 201
 
 
 class SiteList(Resource):
@@ -82,28 +101,3 @@ class PagesList(Resource):
         # pages = PageModel.query.filter_by(Siteid=id)
         # for rank in RankModel.query.filter_by(Siteid=id):
         return {'pages': PageModel.query.filter_by(site_id=id).count()}, 200
-
-
-class CreateSite(Resource):
-    parser2 = reqparse.RequestParser()
-    parser2.add_argument(
-        'name',
-        type=str,
-        required=True,
-        help="This field cannot be left blank!"
-    )
-
-    @jwt_required()
-    def post(self):
-        data = CreateSite.parser2.parse_args()
-        current_user = current_identity.id
-        site = SiteModel(name=data['name'], admin=current_user)
-
-        if SiteModel.find_by_name(data['name']):
-            return {
-                'message': "A site with name '{}' already exists.".format(
-                    data['name'])
-            }, 400
-
-        site.save_to_db()
-        return site.json(), 201

@@ -4,7 +4,7 @@ from models.person import PersonModel
 
 
 class Person(Resource):
-    parser = reqparse.RequestParser()
+    parser = reqparse.RequestParser()  # TODO: merge parsers
     parser.add_argument(
         'name',
         type=str,
@@ -23,24 +23,10 @@ class Person(Resource):
         return {'message': 'Person not found'}, 404
 
     @jwt_required()
-    def post(self, name):
-        if PersonModel.find_by_name(name):
-            return {
-                'message': "A person with name '{}' already exists.".format(
-                    name)
-            }, 400
-
-        current_user = current_identity.id
-        person = PersonModel(name=name, admin=current_user)
-        try:
-            person.save_to_db()
-        except:
-            return {"message": "An error occurred creating the site."}, 500
-
-        return person.json(), 201
-
-    @jwt_required()
     def delete(self, name=None, id=None):
+        if current_identity.role is not 2:
+            return {'message': 'You have no permissions for that!'}, 403
+
         if id:
             person = PersonModel.find_by_id(id)
         else:
@@ -53,6 +39,9 @@ class Person(Resource):
 
     @jwt_required()
     def put(self, id):
+        if current_identity.role is not 2:
+            return {'message': 'You have no permissions for that!'}, 403
+
         data = Person.parser.parse_args()
         person = PersonModel.find_by_id(id)
         current_user = current_identity.id
@@ -60,24 +49,15 @@ class Person(Resource):
         if person:
             person.name = data['name']
             person.admin = current_user
+            person.save_to_db()
+            return person.json(), 200
         else:
             person = PersonModel(name=data['name'], admin=current_user)
-
-        person.save_to_db()
-        return person.json(), 200
-
-
-class PersonList(Resource):
-    @jwt_required()
-    def get(self):
-        return {
-            'persons': list(map(
-                lambda x: x.json(), PersonModel.query.all()
-            ))
-        }, 200
+            person.save_to_db()
+            return person.json(), 201
 
 
-class CreatePerson(Resource):
+class PersonCreate(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument(
         'name',
@@ -88,8 +68,11 @@ class CreatePerson(Resource):
 
     @jwt_required()
     def post(self):
+        if current_identity.role is not 2:
+            return {'message': 'You have no permissions for that!'}, 403
+
         current_user = current_identity.id
-        data = CreatePerson.parser.parse_args()
+        data = PersonCreate.parser.parse_args()
         person = PersonModel(name=data['name'], admin=current_user)
 
         if PersonModel.find_by_name(data['name']):
@@ -101,3 +84,13 @@ class CreatePerson(Resource):
 
         person.save_to_db()
         return person.json(), 201
+
+
+class PersonList(Resource):
+    @jwt_required()
+    def get(self):
+        return {
+            'persons': list(map(
+                lambda x: x.json(), PersonModel.query.all()
+            ))
+        }, 200

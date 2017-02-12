@@ -1,28 +1,21 @@
 from flask_restful import Resource, reqparse
-from flask_jwt import jwt_required
+from flask_jwt import jwt_required, current_identity
 from models.keyword import KeywordModel
 
 
 class Keyword(Resource):
-    parser = reqparse.RequestParser()
+    parser = reqparse.RequestParser()  # TODO: merge parsers
     parser.add_argument(
         'person_id',
         type=int,
         required=True,
         help="Every keyword needs a person id."
     )
-    parser1 = reqparse.RequestParser()
-    parser1.add_argument(
+    parser.add_argument(
         'name',
         type=str,
         required=True,
         help="This field cannot be left blank!"
-    )
-    parser1.add_argument(
-        'person_id',
-        type=int,
-        required=True,
-        help="Every keyword needs a person id."
     )
 
     @jwt_required()
@@ -37,27 +30,10 @@ class Keyword(Resource):
         return {'message': 'Item not found'}, 404
 
     @jwt_required()
-    def post(self):
-        data = Keyword.parser1.parse_args()
-        name = data['name']
-        person_id = ['person_id']
-        if KeywordModel.find_by_name(name):
-            return {
-                'message': "An keyword with name '{}' already exists.".format(
-                    name)
-            }, 400
-
-        keyword = KeywordModel(name=name, person_id=person_id)
-
-        try:
-            keyword.save_to_db()
-        except:
-            return {"message": "An error occurred inserting the item."}, 500
-
-        return keyword.json(), 201
-
-    @jwt_required()
     def delete(self, id=None, name=None):
+        if current_identity.role is not 2:
+            return {'message': 'You have no permissions for that!'}, 403
+
         if id:
             keyword = KeywordModel.find_by_id(id)
         else:
@@ -70,7 +46,10 @@ class Keyword(Resource):
 
     @jwt_required()
     def put(self, id):
-        data = Keyword.parser1.parse_args()
+        if current_identity.role is not 2:
+            return {'message': 'You have no permissions for that!'}, 403
+
+        data = Keyword.parser.parse_args()
         keyword = KeywordModel.find_by_id(id)
 
         if keyword:
@@ -84,6 +63,43 @@ class Keyword(Resource):
             )
             keyword.save_to_db()
             return keyword.json(), 201
+
+
+class KeywordCreate(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument(
+        'person_id',
+        type=int,
+        required=True,
+        help="Every keyword needs a person id."
+    )
+    parser.add_argument(
+        'name',
+        type=str,
+        required=True,
+        help="This field cannot be left blank!"
+    )
+
+    @jwt_required()
+    def post(self):
+        if current_identity.role is not 2:
+            return {'message': 'You have no permissions for that!'}, 403
+
+        data = KyewordCreate.parser.parse_args()
+        name = data['name']
+        person_id = ['person_id']
+
+        if KeywordModel.find_by_name(name):
+            return {
+                'message': "An keyword with name '{}' already exists.".format(
+                    name)
+            }, 400
+        keyword = KeywordModel(name=name, person_id=person_id)
+        try:
+            keyword.save_to_db()
+        except:
+            return {"message": "An error occurred inserting the item."}, 500
+        return keyword.json(), 201
 
 
 class KeywordList(Resource):

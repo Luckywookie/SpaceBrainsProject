@@ -9,12 +9,12 @@ from datetime import timedelta
 from security import authenticate, identity, Login
 from resources.user import UserRegister, UserListView, User,\
     UserRestorePassword, UserChangePassword, UserStatus
-from resources.site import Site, SiteList
-from resources.person import Person, PersonList
+from resources.site import Site, SiteList, SiteCreate
+from resources.person import Person, PersonList, PersonCreate
 from resources.stats import Pages as Stats, StatList, Rank, RankList,\
     RankDay, RankDayList, RankTime, RankTimeList
 from models.pages import PageModel
-from resources.keyword import Keyword, KeywordList
+from resources.keyword import Keyword, KeywordList, KeywordCreate
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = (
@@ -44,10 +44,13 @@ api.add_resource(UserChangePassword, '/user/changepass')
 
 # Reference book urls
 api.add_resource(Site, '/site/<int:id>', '/site/<string:name>')
+api.add_resource(SiteCreate, '/site')
 api.add_resource(SiteList, '/sites')
 api.add_resource(Person, '/person/<string:name>', '/person/<int:id>')
+api.add_resource(PersonCreate, '/person')
 api.add_resource(PersonList, '/persons')
 api.add_resource(Keyword, '/keyword/<string:name>', '/keyword/<int:id>')
+api.add_resource(KeywordCreate, '/keyword')
 api.add_resource(KeywordList, '/keywords')
 
 # Statistic urls
