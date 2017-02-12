@@ -1,9 +1,17 @@
 ﻿
-<div class="col-md-3" style="background-color:lightgray; padding: 120px 30px; height: 500px">
-    <ul>
-       
-        <li>@Html.ActionLink("Добавить Администратора", "AdminRegistration", "Account")</li>
-    </ul>
-</div>
 
+<div class="col-md-4" >
+    <div class="jumbotron" style="height: 400px">
+        <ul class="nav nav-pills nav-stacked">
+            <li role="presentation">
+                @Html.ActionLink("Управление справочниками", "Index", "Home")
+                <ul>
+                    <li role="presentation">@Html.ActionLink("Пользователи", "Index", "Site")</li>
+                </ul>
+            </li>
+            <li role="presentation">@Html.ActionLink("Статистика краулера", "Index", "CrawlerStats")</li>
+            <li role="presentation">@Html.ActionLink("Управление Аккаунтом", "Index", "CrawlerStats")</li>
+        </ul>
+    </div>
+</div>
 

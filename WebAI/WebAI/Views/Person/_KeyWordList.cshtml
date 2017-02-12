@@ -32,24 +32,31 @@
     }
 
 }
-<h2>Ключевые слова для персоны @ViewBag.Person</h2>
-<div class="list-group">
-    @{
-        if (Model.Count() > 0)
-        {
-            foreach (var keyWord in Model)
+<div class="panel panel-default">
+    <!-- Default panel contents -->
+    <div class="panel-heading">Список "Ключевых слов" для персоны "@ViewBag.Person"</div>
+    @*<div class="panel-body">
+        <p>Для редактирования и удаления записи - нажмите на неё</p>
+    </div>*@
+
+    <div class="list-group">
+        @{
+            if (Model.Count() > 0)
             {
-                <a href="@Url.Action("ChangeKeyWord", new { id = keyWord.Id })" class="list-group-item">@keyWord.Name</a>
+                foreach (var keyWord in Model)
+                {
+                    <a href="@Url.Action("ChangeKeyWord", new { id = keyWord.Id })" class="list-group-item">@keyWord.Name</a>
+                }
+            }
+            else
+            {
+                <div class="alert alert-warning" role="alert">Для данной персоны еще не добавлены ключевые слова!</div>
             }
         }
-        else
-        {
-            <h4>Для данной персоны еще не добавлены ключевые слова</h4>
-        }
-    }
-    
-</div>
 
+    </div>
+</div>
 <a class="btn btn-info" href="@Url.Action("AddKeyWord", new { id = personId })">Добавить новую запись</a>
+   
 
 

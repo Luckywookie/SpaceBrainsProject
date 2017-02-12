@@ -12,12 +12,20 @@
     
 
     <hr />
-    <div class="list-group">
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">Список "Сайтов"</div>
+        @*<div class="panel-body">
+                <p>Для редактирования и удаления записи - нажмите на неё</p>
+            </div>*@
+        <!-- List group -->
+        <div class="list-group">
 
-        @foreach (var site in Model)
+            @foreach (var site in Model)
             {
-            <a href=@Url.Action("Edit", new { id = site.Id }) class="list-group-item">@site.Name</a>
-        }
+                <a href=@Url.Action("Edit", new { id = site.Id }) class="list-group-item">@site.Name</a>
+            }
+        </div>
     </div>
     <a class="btn btn-info" href="@Url.Action("Add")">Добавить новую запись</a>
 </div>
