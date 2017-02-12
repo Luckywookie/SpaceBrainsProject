@@ -247,6 +247,6 @@ class UserStatus(Resource):
 
 def password_gen():
     symbols = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUV\
-        WXYZ01234567890?!@#$%^&*()'
+    WXYZ01234567890?!@#$%^&*()'
     password = ''.join(sample(symbols, 8))
     return password
