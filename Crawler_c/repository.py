@@ -245,6 +245,7 @@ class DbPageRepository(DbRepositoryConnect):
             self.cursor.execute(sql, param)
             self.conn.commit()
         except:
+            print("Ошибка при записи в таблицу Pages")
             self.conn.rollback()
 
     def updatepageinstore(self, page):
@@ -254,6 +255,7 @@ class DbPageRepository(DbRepositoryConnect):
             self.cursor.execute(sql, param)
             self.conn.commit()
         except:
+            print("Ошибка при обновлении записи о Pages")
             self.conn.rollback()
 
 
@@ -270,6 +272,7 @@ class DbPersonPageRankRepository(DbRepositoryConnect):
             self.cursor.execute(sql, param)
             self.conn.commit()
         except:
+            print("Ошибка при записи в таблицу PersonPageRank")
             self.conn.rollback()
 
     def updaterankinstore(self, personpagerank):
