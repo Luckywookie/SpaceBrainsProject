@@ -77,7 +77,7 @@ def get_keywords():
 
 class GeekSitemapSpider(SitemapSpider):
 
-    name = u'geek_sitemap_spider'
+    name = 'geek_sitemap_spider'
 
     sitemap_urls = get_new_sitemaps()
     old_sitemap_urls = []
