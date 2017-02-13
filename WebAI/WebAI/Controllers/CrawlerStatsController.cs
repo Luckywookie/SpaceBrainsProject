@@ -13,6 +13,7 @@ using WebAI.Models;
 
 namespace WebAI.Controllers
 {
+    [Authorize]
     public class CrawlerStatsController : Controller
     {
 

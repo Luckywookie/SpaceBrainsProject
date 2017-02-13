@@ -45,17 +45,14 @@ namespace WebAI.Controllers
                 model.To = user.Email;
                 model.Subject = "Напоминание пароля";
                 model.From = "crawler@spacebrains.bblde3hap.info";
-                model.Body = user.Password;
+                model.Body = "Ваш пароль: " + user.Password;
                 new EmailController().SendEmail(model).Deliver();
 
                 return RedirectToAction("LogIn");
             }
-
             return RedirectToAction("LogIn");
         }
-
         
-        [Authorize]
         public ActionResult AddUser()
         {
             if (IsCurrentUserSuperAdmin())
@@ -63,7 +60,7 @@ namespace WebAI.Controllers
             else
                 return RedirectToAction("UserRegistration");
         }
-        [Authorize]
+        
         [HttpGet]
         public ActionResult AdminRegistration()
         {
@@ -71,8 +68,7 @@ namespace WebAI.Controllers
             ViewBag.FormName = "Администратора";
             return View("UserRegistration");
         }
-
-        [Authorize]
+        
         [HttpPost]
         public ActionResult AdminRegistration(UserRegistrationViewModel userRegistrationViewModel)
         {
@@ -84,11 +80,8 @@ namespace WebAI.Controllers
             }
             else
                 return View("UserRegistration", userRegistrationViewModel);
-            
-            
         }
-
-        [Authorize]
+        
         [HttpGet]
         public ActionResult UserRegistration()
         {
@@ -96,8 +89,7 @@ namespace WebAI.Controllers
             ViewBag.FormName = "Пользователя";
             return View("UserRegistration");
         }
-
-        [Authorize]
+        
         [HttpPost]
         public ActionResult UserRegistration(UserRegistrationViewModel userRegistrationViewModel)
         {
@@ -138,18 +130,15 @@ namespace WebAI.Controllers
             return RedirectToAction("LogIn",logInModel);
         }
 
-        [Authorize]
         [HttpGet]
         public ActionResult ChangePassword()
         {
             return View();
         }
-
-        [Authorize]
+        
         [HttpPost]
         public ActionResult ChangePassword(ChangePasswordViewModel changePasswordModel)
         {
-            
             if (ModelState.IsValid)
             {
                 _authenticationService.ChangePassword(GetCurrentUserName(), changePasswordModel.NewPassword);
@@ -159,16 +148,14 @@ namespace WebAI.Controllers
             else
                 return View(changePasswordModel);
         }
-
-        [Authorize]
+        
         public ActionResult LogOut()
         {
             FormsAuthentication.SignOut();
             AdminIdRemember.Id = 0;
             return Redirect(FormsAuthentication.LoginUrl);
         }
-
-        //[Authorize]
+        
         [AllowAnonymous]
         [HttpGet]
         public ActionResult CurrentUser()
@@ -176,47 +163,39 @@ namespace WebAI.Controllers
             
             return PartialView("_CurrentUser", GetCurrentUserName());
         }
-
-        [Authorize]
+        
         [HttpGet]
         public JsonResult CheckLogin(string login)
         {
             var result = _authenticationService.CheckLogin(login);
             return Json(result, JsonRequestBehavior.AllowGet);
         }
-
-        [Authorize]
+        
         [HttpGet]
         public JsonResult CheckPassword(string oldPassword)
         {
             var result = _authenticationService.CheckUser(GetCurrentUserName(), oldPassword);
             return Json(result, JsonRequestBehavior.AllowGet);
         }
-
-        [Authorize]
+        
         string GetCurrentUserName()
         {
             return Thread.CurrentPrincipal.Identity?.Name;
-            
         }
-
-        [Authorize]
+        
         int GetCurrentAdminId()
         {
             return _authenticationService.GetAdminIdByLogin(GetCurrentUserName());
         }
-
-        [Authorize]
+        
         int GetCurrentAdminId(string login)
         {
             return _authenticationService.GetAdminIdByLogin(login);
         }
-
-        [Authorize]
+        
         bool IsCurrentUserSuperAdmin()
         {
             return _authenticationService.IsSuperAdmin(GetCurrentUserName());
         }
-
     }
 }
