@@ -1,4 +1,4 @@
-#from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
 import requests
 import gzip
 import datetime
@@ -119,9 +119,11 @@ def updatelastscandate(pagewoker, pageid):
     pagewoker.updatepageinstore(page)
 
 
-def countstatforpage(personworker, keywordworker, html):
+def countstatforpage(personworker, keywordworker, soup):
     """
-    :param html: HTML страницы которую анализируем на предмет сколько раз встречается ключевые слова.
+    :param personworker:
+    :param keywordworker:
+    :param soup: HTML страницы которую анализируем на предмет сколько раз встречается ключевые слова.
     :return: Словаь по персонам с ID персоны и статистика для проанализируемой странице
     """
     personslist = personworker.getpersons()
@@ -131,16 +133,17 @@ def countstatforpage(personworker, keywordworker, html):
         keywordslist = keywordworker.getbypersonid(person['ID'])  # GetKeywordByPersonID
         if len(keywordslist) > 0:
             for keyword in keywordslist:
-                lst.append(parse.countstat(html, keyword['Name']))
+                lst.append(parse.countstat(soup, keyword['Name']))
             s = sum(lst)
         else:
-            s = parse.countstat(html, person['Name'])
+            s = parse.countstat(soup, person['Name'])
         personsdict[person['ID']] = s
     return personsdict
 
 
 def writerank(personpagerankwoker, personid, pageid, rank):
     """
+    :param personpagerankwoker:
     :param personid:
     :param pageid:
     :param rank:
@@ -196,16 +199,18 @@ def worker(repository_worker, pagesqueue):
             updatelastscandate(repository_worker['pages'], item['ID'])
         elif (parse.whatisurl(item['Url'])) == 'sitemap':
             print('Получаем ссылки из sitemap и записываем в БД')
-            urlstowrite = parse.sitemapparse(html)
+            soup = BeautifulSoup(html, 'lxml')
+            urlstowrite = parse.sitemapparse(soup)
             for url in urlstowrite:
                 writeurl(repository_worker['pages'], url, item['SiteID'])
                 updatelastscandate(repository_worker['pages'], item['ID'])
         else:  # Страница для анализа.
-            urlsfrompage = parse.geturlfrompage(item['Url'], html)
+            soup = BeautifulSoup(html, 'lxml')
+            urlsfrompage = parse.geturlfrompage(item['Url'], soup)
             urlsfrompage.difference_update(pagesset)
             for url in urlsfrompage:
                 writeurl(repository_worker['pages'], url, item['SiteID'])
-            d = countstatforpage(repository_worker['person'], repository_worker['keyword'], html)
+            d = countstatforpage(repository_worker['person'], repository_worker['keyword'], soup)
             for pers, rank in d.items():
                 writerank(repository_worker['personpagerank'], pers, item['ID'], rank)
             updatelastscandate(repository_worker['pages'], item['ID'])
@@ -217,13 +222,10 @@ def worker(repository_worker, pagesqueue):
 
 
 def main():
-    # cn = db_connect()
-    # cur = cn.cursor()
 
     num_worker_threads = 4
 
     while True:
-        # db = dbconnection_init()
 
         repository_worker = reposytory_init()
         sites = findsitestorank(repository_worker['sites'])
@@ -231,7 +233,6 @@ def main():
         pages = pagestowalk(repository_worker['pages'])
 
         if len(pages) > 0:
-            # i = 0  # Cделал для отладки
 
             pagesqueue = queue.Queue()
             threads = []

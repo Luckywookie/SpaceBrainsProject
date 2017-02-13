@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup, SoupStrainer
 import urllib.parse
 import urllib.robotparser
 import re
@@ -32,28 +32,28 @@ def readrobots(file):
             result['root'] = x.split(':', maxsplit=1)[-1].strip()
             # return x.split(':', maxsplit=1)[-1].strip()
     #print(result)
-    if result.get('sitemap') :
+    if result.get('sitemap'):
         return result['sitemap']
     elif result.get('root'):
         return result['root']
 
-def sitemapparse(html):
+def sitemapparse(soup):
     """
-    :param html: HTML страница sitemap для извлечения ссылок для дальнейшего обхода.
+    :param soup: HTML страница sitemap для извлечения ссылок для дальнейшего обхода.
     :return: Список ссылок для записи в БД по которым необходимо совершать обход
     """
-    soup = BeautifulSoup(html, 'lxml')
+    # soup = BeautifulSoup(html, 'lxml')
     st = [url.text for url in soup.find_all('loc')]
     return st
 
 
-def countstat(html, word):
+def countstat(soup, word):
     """
-    :param html: Страница для подсчета статистики.
+    :param soup: Страница для подсчета статистики.
     :param word: Слово по которому подсчитываем статистику
     :return: Количество раз упоминания слован на странице
     """
-    soup = BeautifulSoup(html, 'lxml')
+    # soup = BeautifulSoup(html, 'lxml')
     c = r'\b{}\b'.format(word)
     w = re.compile(c)
     i = 0
@@ -64,14 +64,15 @@ def countstat(html, word):
     return i
 
 
-def geturlfrompage(url, html):
+def geturlfrompage(url, soup):
     """
     Извлекает ссылки со страницы в соответстви с правилами в robots.txt
     :param url:
-    :param html:
+    :param soup:
     :return:
     """
-    soup = BeautifulSoup(html, 'lxml')
+    # only_a = SoupStrainer('a')
+    # soup = BeautifulSoup(html, 'lxml', parse_only=only_a)
     alst = soup.select('a[href^="/"]')
     p = urllib.parse.urlparse(url)
     r = urllib.robotparser.RobotFileParser()
