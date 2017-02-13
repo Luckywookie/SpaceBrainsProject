@@ -23,9 +23,9 @@ namespace WebAI.Controllers
         }
 
 
-        public ActionResult UsersList(int userRoleid)
+        public ActionResult UsersList(int roleId)
         {
-            ViewBag.RoleId = userRoleid;
+            ViewBag.RoleId = roleId;
             return View(GetUsers());
         }
 
@@ -42,7 +42,7 @@ namespace WebAI.Controllers
         public ActionResult DeleteUser(int id, int userRoleId)
         {
             _userService.DeleteUserById(id);
-            return RedirectToAction("UsersList", new { id = userRoleId });
+            return RedirectToAction("UsersList", new { roleId = userRoleId });
         }
 
         [HttpGet]
@@ -58,7 +58,7 @@ namespace WebAI.Controllers
         {
             var user = _mapper.Map<EditUserViewModel, UserDTO>(editUserModel);
             _userService.EditUser(user);
-            return RedirectToAction("UsersList", new { id = userRoleId });
+            return RedirectToAction("UsersList", new { roleId = userRoleId });
         }
 
         public ActionResult UserAccountManage(int userId, int userRoleId)

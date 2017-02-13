@@ -1,4 +1,5 @@
 ﻿using BusinessLogic.DTO.Account;
+using Domain.Entities.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace BusinessLogic.Services.Base
         bool CheckLogin(string loginToCheck);
         void AdminRegistration(UserDTO userRegistrationData);
         void UserRegistration(UserDTO userRegistrationData, int adminId);
+        User GetUserByLogin(string login);
         int GetAdminIdByLogin(string adminLogin);
         void ChangePassword(string login, string newPassword);
     }

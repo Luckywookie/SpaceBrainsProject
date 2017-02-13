@@ -25,9 +25,13 @@ namespace BusinessLogic.Services
             _mapper = mapper;
         }
 
+        public User GetUserByLogin(string login)
+        {
+            return _authenticationRepository.GetUserByLogin(login);
+        }
         public bool CheckUser(string login, string password)
         {
-            var user = _authenticationRepository.GetUserByLogin(login);
+            var user = GetUserByLogin(login);
             if (user == null)
                 return false;
 

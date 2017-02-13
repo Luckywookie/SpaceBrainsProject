@@ -26,12 +26,36 @@ namespace WebAI.Controllers
             _authenticationService = authenticationService;
             _mapper = mapper;
         }
-
-        //public ActionResult AccountManage()
-        //{
-
-        //}
         
+        [AllowAnonymous]
+        [HttpGet]
+        public ActionResult PasswordReminder()
+        {
+            return View();
+        }
+        
+        [AllowAnonymous]
+        [HttpPost]
+        public ActionResult PasswordReminder(LogInViewModel loginModel)
+        {
+            if (!_authenticationService.CheckLogin(loginModel.Login))
+            {
+                var user = _authenticationService.GetUserByLogin(loginModel.Login);
+                var model = new EmailModel();
+                model.To = user.Email;
+                model.Subject = "Напоминание пароля";
+                model.From = "crawler@spacebrains.bblde3hap.info";
+                model.Body = user.Password;
+                new EmailController().SendEmail(model).Deliver();
+
+                return RedirectToAction("LogIn");
+            }
+
+            return RedirectToAction("LogIn");
+        }
+
+        
+        [Authorize]
         public ActionResult AddUser()
         {
             if (IsCurrentUserSuperAdmin())
@@ -39,6 +63,7 @@ namespace WebAI.Controllers
             else
                 return RedirectToAction("UserRegistration");
         }
+        [Authorize]
         [HttpGet]
         public ActionResult AdminRegistration()
         {
@@ -47,7 +72,7 @@ namespace WebAI.Controllers
             return View("UserRegistration");
         }
 
-        
+        [Authorize]
         [HttpPost]
         public ActionResult AdminRegistration(UserRegistrationViewModel userRegistrationViewModel)
         {
@@ -55,7 +80,7 @@ namespace WebAI.Controllers
             {
                 _authenticationService.AdminRegistration(_mapper.Map<UserRegistrationViewModel, UserDTO>(userRegistrationViewModel));
                 
-                return RedirectToAction("UsersList", "User", new { id = (int)RolesEnum.Root });
+                return RedirectToAction("UsersList", "User", new { roleId = (int)RolesEnum.Root });
             }
             else
                 return View("UserRegistration", userRegistrationViewModel);
@@ -63,7 +88,7 @@ namespace WebAI.Controllers
             
         }
 
-        
+        [Authorize]
         [HttpGet]
         public ActionResult UserRegistration()
         {
@@ -72,7 +97,7 @@ namespace WebAI.Controllers
             return View("UserRegistration");
         }
 
-        
+        [Authorize]
         [HttpPost]
         public ActionResult UserRegistration(UserRegistrationViewModel userRegistrationViewModel)
         {
@@ -81,7 +106,7 @@ namespace WebAI.Controllers
             {
                 _authenticationService.UserRegistration(_mapper.Map<UserRegistrationViewModel, UserDTO>(userRegistrationViewModel), adminId);
                 
-                return RedirectToAction("UsersList", "User", new { id = (int)RolesEnum.Admin });
+                return RedirectToAction("UsersList", "User", new { roleId = (int)RolesEnum.Admin });
             }
             else
                 return View("UserRegistration", userRegistrationViewModel);
@@ -94,7 +119,7 @@ namespace WebAI.Controllers
             ViewBag.IsLoginForm = true;
             return View();
         }
-
+        
         [AllowAnonymous]
         [HttpPost]
         public ActionResult LogIn(LogInViewModel logInModel)
@@ -113,11 +138,14 @@ namespace WebAI.Controllers
             return RedirectToAction("LogIn",logInModel);
         }
 
+        [Authorize]
         [HttpGet]
         public ActionResult ChangePassword()
         {
             return View();
         }
+
+        [Authorize]
         [HttpPost]
         public ActionResult ChangePassword(ChangePasswordViewModel changePasswordModel)
         {
@@ -132,6 +160,7 @@ namespace WebAI.Controllers
                 return View(changePasswordModel);
         }
 
+        [Authorize]
         public ActionResult LogOut()
         {
             FormsAuthentication.SignOut();
@@ -139,6 +168,8 @@ namespace WebAI.Controllers
             return Redirect(FormsAuthentication.LoginUrl);
         }
 
+        //[Authorize]
+        [AllowAnonymous]
         [HttpGet]
         public ActionResult CurrentUser()
         {
@@ -146,6 +177,7 @@ namespace WebAI.Controllers
             return PartialView("_CurrentUser", GetCurrentUserName());
         }
 
+        [Authorize]
         [HttpGet]
         public JsonResult CheckLogin(string login)
         {
@@ -153,30 +185,34 @@ namespace WebAI.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
+        [Authorize]
         [HttpGet]
         public JsonResult CheckPassword(string oldPassword)
         {
             var result = _authenticationService.CheckUser(GetCurrentUserName(), oldPassword);
             return Json(result, JsonRequestBehavior.AllowGet);
         }
-        
 
+        [Authorize]
         string GetCurrentUserName()
         {
             return Thread.CurrentPrincipal.Identity?.Name;
             
         }
 
+        [Authorize]
         int GetCurrentAdminId()
         {
             return _authenticationService.GetAdminIdByLogin(GetCurrentUserName());
         }
 
+        [Authorize]
         int GetCurrentAdminId(string login)
         {
             return _authenticationService.GetAdminIdByLogin(login);
         }
 
+        [Authorize]
         bool IsCurrentUserSuperAdmin()
         {
             return _authenticationService.IsSuperAdmin(GetCurrentUserName());
