@@ -23,15 +23,48 @@ namespace WebAI.Controllers
         }
 
 
-        public ActionResult UsersList(int id)
+        public ActionResult UsersList(int userRoleid)
         {
-            ViewBag.RoleId = id;
+            ViewBag.RoleId = userRoleid;
             return View(GetUsers());
         }
 
         IEnumerable<UserViewModel> GetUsers()
         {
             return _mapper.Map<IEnumerable<UserDTO>, IEnumerable<UserViewModel>>(_userService.GetUsers());
+        }
+
+        EditUserViewModel GetUser(int id)
+        {
+            return _mapper.Map<UserDTO, EditUserViewModel>(_userService.GetUserById(id));
+        }
+
+        public ActionResult DeleteUser(int id, int userRoleId)
+        {
+            _userService.DeleteUserById(id);
+            return RedirectToAction("UsersList", new { id = userRoleId });
+        }
+
+        [HttpGet]
+        public ActionResult EditUser(int id, int userRoleId)
+        {
+            ViewBag.RoleId = userRoleId;
+            var user = GetUser(id);
+            return View(user);
+        }
+
+        [HttpPost]
+        public ActionResult EditUser(EditUserViewModel editUserModel, int userRoleId)
+        {
+            var user = _mapper.Map<EditUserViewModel, UserDTO>(editUserModel);
+            _userService.EditUser(user);
+            return RedirectToAction("UsersList", new { id = userRoleId });
+        }
+
+        public ActionResult UserAccountManage(int userId, int userRoleId)
+        {
+            ViewBag.RoleId = userRoleId;
+            return View(GetUser(userId));
         }
     }
 }

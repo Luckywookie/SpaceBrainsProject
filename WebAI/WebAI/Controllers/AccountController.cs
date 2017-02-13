@@ -27,6 +27,10 @@ namespace WebAI.Controllers
             _mapper = mapper;
         }
 
+        //public ActionResult AccountManage()
+        //{
+
+        //}
         
         public ActionResult AddUser()
         {

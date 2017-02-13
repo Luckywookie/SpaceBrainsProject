@@ -1,0 +1,34 @@
+﻿@model WebAI.Models.Account.EditUserViewModel
+@{
+    ViewBag.Title = "UsersList";
+    //int roleId = ViewBag.RoleId;
+}
+
+@Html.Partial("_Menu")
+
+<div class="col-md-8">
+    <div style="text-align:center">
+        <h3> Управление аккаунтом</h3>
+        @*<p>Для редактирования и удаления записи - нажмите на неё</p>*@
+    </div>
+    <hr />
+    <ul class="list-group">
+        <li class="list-group-item">
+            @Html.LabelFor(x => x.Login)
+            @Html.DisplayFor(x => x.Login)
+        </li>
+        <li class="list-group-item">
+            @Html.LabelFor(x => x.Name)
+            @Html.DisplayFor(x => x.Name)
+        </li>
+        <li class="list-group-item">
+            @Html.LabelFor(x => x.Email)
+            @Html.DisplayFor(x => x.Email)
+        </li>
+
+    </ul>
+    <a class="btn btn-info" href="@Url.Action("ChangePassword", "Account")">Изменить пароль</a>
+</div>
+
+
+

@@ -30,6 +30,8 @@ namespace WebAI.Controllers
         {
             bool isSuperAdmin = _authenticationService.IsSuperAdmin(CurrentAdminData.Name);
             ViewBag.IsSuperAdmin = isSuperAdmin;
+            //ViewBag.CurrentUserId = _authenticationService.GetAdminIdByLogin(CurrentAdminData.Name);
+            AdminIdRemember.CurrentUserId = _authenticationService.GetAdminIdByLogin(CurrentAdminData.Name);
             return View(isSuperAdmin);
         }
 

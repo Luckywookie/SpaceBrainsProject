@@ -19,7 +19,8 @@ namespace WebAI.Infrastructure.Mapping.Account
 
             CreateMap<UserDTO, UserViewModel>();
 
-            CreateMap<UserDTO, EditUserViewModel>();
+            CreateMap<UserDTO, EditUserViewModel>()
+                .ForMember(dest => dest.PasswordConfirm, opt => opt.MapFrom(src => src.Password));
 
             CreateMap<EditUserViewModel, UserDTO>();
 

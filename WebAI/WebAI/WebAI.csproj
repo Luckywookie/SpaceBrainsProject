@@ -277,6 +277,8 @@
     <Content Include="Views\CrawlerStats\_crawlerStats.cshtml" />
     <Content Include="Views\User\UsersList.cshtml" />
     <Content Include="Views\Shared\_Menu.cshtml" />
+    <Content Include="Views\User\EditUser.cshtml" />
+    <Content Include="Views\User\UserAccountManage.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

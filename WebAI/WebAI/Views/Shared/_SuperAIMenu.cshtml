@@ -1,16 +1,16 @@
-﻿
+﻿@using Utility.Helpers
 
 <div class="col-md-4" >
-    <div class="jumbotron" style="height: 400px">
+    <div class="jumbotron" style="height: auto">
         <ul class="nav nav-pills nav-stacked">
             <li role="presentation">
                 @Html.ActionLink("Управление справочниками", "Index", "Home")
                 <ul>
-                    <li role="presentation">@Html.ActionLink("Администраторы", "UsersList", "User", new { id = (int)Utility.enums.RolesEnum.Root }, null)</li>
+                    <li role="presentation">@Html.ActionLink("Администраторы", "UsersList", "User", new { userRoleid = (int)Utility.enums.RolesEnum.Root }, null)</li>
                 </ul>
             </li>
-            <li role="presentation">@Html.ActionLink("Статистика краулера", "Index", "CrawlerStats", new { id = (int)Utility.enums.RolesEnum.Root }, null)</li>
-            <li role="presentation">@Html.ActionLink("Управление Аккаунтом", "Index", "CrawlerStats")</li>
+            <li role="presentation">@Html.ActionLink("Статистика краулера", "Index", "CrawlerStats", new { userRoleid = (int)Utility.enums.RolesEnum.Root }, null)</li>
+            <li role="presentation">@Html.ActionLink("Управление Аккаунтом", "UserAccountManage", "User", new { userId = AdminIdRemember.CurrentUserId, userRoleId = (int)Utility.enums.RolesEnum.Admin }, null)</li>
         </ul>
     </div>
 </div>

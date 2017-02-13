@@ -34,6 +34,7 @@ else
                 <th>Имя</th>
                 <th>Логин</th>
                 <th>Email</th>
+                <th>Действия</th>
             </tr>
             @foreach( var user in Model)
             {
@@ -42,6 +43,10 @@ else
                     <td>@user.Name</td>
                     <td>@user.Login</td>
                     <td>@user.Email</td>
+                    <td>
+                        @Html.ActionLink("Изменить", "EditUser", new { id = @user.Id, userRoleId = ViewBag.RoleId }, new { @class = "btn btn-success" })
+                        @Html.ActionLink("Удалить", "DeleteUser", new { id = @user.Id , userRoleId = ViewBag.RoleId }, new { @class = "btn btn-danger" })
+                    </td>
                 </tr>
             }
         </table>

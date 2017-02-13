@@ -31,9 +31,9 @@ namespace WebAI.Controllers
         }
 
 
-        public ActionResult Index(int id)
+        public ActionResult Index(int userRoleid)
         {
-            ViewBag.RoleId = id;
+            ViewBag.RoleId = userRoleid;
             return View(GetCrawlerStats());
         }
 
