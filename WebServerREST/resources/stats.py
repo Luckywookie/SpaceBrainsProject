@@ -64,7 +64,7 @@ class RankList(Resource):
     @jwt_required()
     def get(self, date=None, date1=None, date2=None):
         if date:
-            date = RankDay._pars_date(date)
+            date = Rank._pars_date(date)
             if not date:
                 return {'message': 'format of date is false'}, 404
         if date1 and date2:
