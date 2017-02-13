@@ -11,7 +11,7 @@
                     <li role="presentation">@Html.ActionLink("Пользователи", "UsersList", "User", new { roleId = (int)Utility.enums.RolesEnum.Admin }, null)</li>
                 </ul>
             </li>
-            <li role="presentation">@Html.ActionLink("Статистика краулера", "Index", "CrawlerStats", new { roleId = (int)Utility.enums.RolesEnum.Admin }, null)</li>
+            <li role="presentation">@Html.ActionLink("Статистика краулера", "Index", "CrawlerStats", new { userRoleid = (int)Utility.enums.RolesEnum.Admin }, null)</li>
             <li role="presentation">@Html.ActionLink("Управление Аккаунтом", "UserAccountManage", "User", new {userId = AdminIdRemember.CurrentUserId, userRoleId = (int)Utility.enums.RolesEnum.Admin }, null)</li>
         </ul>
     </div>
