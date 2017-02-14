@@ -1,4 +1,5 @@
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, SoupStrainer
+import lxml.html
 import requests
 import gzip
 import datetime
@@ -119,7 +120,7 @@ def updatelastscandate(pagewoker, pageid):
     pagewoker.updatepageinstore(page)
 
 
-def countstatforpage(personworker, keywordworker, soup):
+def countstatforpage(personworker, keywordworker, tree):
     """
     :param personworker:
     :param keywordworker:
@@ -133,10 +134,10 @@ def countstatforpage(personworker, keywordworker, soup):
         keywordslist = keywordworker.getbypersonid(person['ID'])  # GetKeywordByPersonID
         if len(keywordslist) > 0:
             for keyword in keywordslist:
-                lst.append(parse.countstat(soup, keyword['Name']))
+                lst.append(parse.countstat(tree, keyword['Name']))
             s = sum(lst)
         else:
-            s = parse.countstat(soup, person['Name'])
+            s = parse.countstat(tree, person['Name'])
         personsdict[person['ID']] = s
     return personsdict
 
@@ -205,12 +206,15 @@ def worker(repository_worker, pagesqueue):
                 writeurl(repository_worker['pages'], url, item['SiteID'])
                 updatelastscandate(repository_worker['pages'], item['ID'])
         else:  # Страница для анализа.
-            soup = BeautifulSoup(html, 'lxml')
-            urlsfrompage = parse.geturlfrompage(item['Url'], soup)
+            # only_a = SoupStrainer('a')
+            # soup = BeautifulSoup(html, 'lxml', parse_only=only_a)
+            # soup = BeautifulSoup(html, 'lxml')
+            tree = lxml.html.fromstring(html)
+            urlsfrompage = parse.geturlfrompage(item['Url'], tree)
             urlsfrompage.difference_update(pagesset)
             for url in urlsfrompage:
                 writeurl(repository_worker['pages'], url, item['SiteID'])
-            d = countstatforpage(repository_worker['person'], repository_worker['keyword'], soup)
+            d = countstatforpage(repository_worker['person'], repository_worker['keyword'], tree)
             for pers, rank in d.items():
                 writerank(repository_worker['personpagerank'], pers, item['ID'], rank)
             updatelastscandate(repository_worker['pages'], item['ID'])

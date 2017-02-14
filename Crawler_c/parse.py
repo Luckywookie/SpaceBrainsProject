@@ -2,6 +2,7 @@
 import urllib.parse
 import urllib.robotparser
 import re
+# import lxml.html
 
 
 def whatisurl(url):
@@ -47,47 +48,51 @@ def sitemapparse(soup):
     return st
 
 
-def countstat(soup, word):
+def countstat(tree, word):
     """
     :param soup: Страница для подсчета статистики.
     :param word: Слово по которому подсчитываем статистику
     :return: Количество раз упоминания слован на странице
     """
     # soup = BeautifulSoup(html, 'lxml')
+    iterator = tree.itertext()
     c = r'\b{}\b'.format(word)
     w = re.compile(c)
     i = 0
-    for string in soup.stripped_strings:
+    for string in iterator:
         if len(w.findall(repr(string))) > 0:
             i += len(w.findall(repr(string)))
     print('Rank ->', i)
     return i
 
 
-def geturlfrompage(url, soup):
+def geturlfrompage(url, tree):
     """
     Извлекает ссылки со страницы в соответстви с правилами в robots.txt
     :param url:
-    :param soup:
+    :param tree:
     :return:
     """
-    # only_a = SoupStrainer('a')
-    # soup = BeautifulSoup(html, 'lxml', parse_only=only_a)
-    alst = soup.select('a[href^="/"]')
-    p = urllib.parse.urlparse(url)
-    r = urllib.robotparser.RobotFileParser()
+    tree.make_links_absolute(url, resolve_base_href=True)
+
+    links = tree.iterlinks()
+    links_set = set([item[2] for item in links if item[0].tag == 'a'])
+
+    # alst = soup.select('a[href^="/"]')
+    p = urllib.parse.urlparse(url)              # Парсим полученную ссылку
+    r = urllib.robotparser.RobotFileParser()    # Парсинг robots.txt
     rurl = urllib.parse.urlunparse((p.scheme, p.netloc, 'robots.txt', '', '', ''))
     r.set_url(rurl)
-    r.read()
+    r.read()                                    # Читаем и парсим robots.txt
     # print(p.netloc)
     hrefs = set()
-    for link in alst:
-        path = link['href'].split('?')[0]
-        u = urllib.parse.urljoin(url, path)
-        u1 = urllib.parse.urlparse(u)
-        if p.netloc == u1.netloc:
-            if r.can_fetch("*", u):
-                hrefs.add(u)
+    for link in links_set:
+        u = urllib.parse.urlparse(link)
+        u1 = urllib.parse.urlunparse((u.scheme, u.netloc, u.path, '', '', ''))
+        if p.netloc == u.netloc:
+            print('U1 ->', u1)
+            if r.can_fetch("*", u1):
+                hrefs.add(u1)
     return hrefs
 
 
