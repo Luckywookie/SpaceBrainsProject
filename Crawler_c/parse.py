@@ -1,21 +1,24 @@
-# from bs4 import BeautifulSoup, SoupStrainer
 import urllib.parse
 import urllib.robotparser
 import re
-# import lxml.html
 
 
 def whatisurl(url, headers):
     """
+    :param headers:
     :param url: Ссылка для анализа, куда ведет
     :return: 'robots' или 'sitemap' в зависимости от того на что указывает ссылка.
     """
+    print('Смотрим страницу', url)
     parse = urllib.parse.urlsplit(url)
     h = headers['Content-Type'].split(';')[0]
     if re.search(r'robots.txt', parse.path) and h == 'text/plain':
+        print('h ->', h)
         return 'robots'
-    elif re.search(r'sitemap', parse.path) and h == 'application/xml':
+    elif re.search(r'sitemap', parse.path) and (re.search(r'xml', h) or re.search(r'octet-stream', h)):
+        print('h ->', h)
         return 'sitemap'
+
 
 def readrobots(file):
     """
@@ -27,33 +30,29 @@ def readrobots(file):
     for x in r:
         if x.startswith('Sitemap'):
             result['sitemap'] = x.split(':', maxsplit=1)[-1].strip()
-            #return x.split(':', maxsplit=1)[-1].strip()
         elif x.startswith('Host'):
             result['root'] = x.split(':', maxsplit=1)[-1].strip()
-            # return x.split(':', maxsplit=1)[-1].strip()
-    #print(result)
     if result.get('sitemap'):
         return result['sitemap']
     elif result.get('root'):
         return result['root']
+
 
 def sitemapparse(soup):
     """
     :param soup: HTML страница sitemap для извлечения ссылок для дальнейшего обхода.
     :return: Список ссылок для записи в БД по которым необходимо совершать обход
     """
-    # soup = BeautifulSoup(html, 'lxml')
-    st = [url.text for url in soup.find_all('loc')]
-    return st
+    for item in soup:
+        yield item.text
 
 
 def countstat(tree, word):
     """
-    :param soup: Страница для подсчета статистики.
+    :param tree: Страница для подсчета статистики.
     :param word: Слово по которому подсчитываем статистику
     :return: Количество раз упоминания слован на странице
     """
-    # soup = BeautifulSoup(html, 'lxml')
     iterator = tree.itertext()
     c = r'\b{}\b'.format(word)
     w = re.compile(c)
@@ -77,13 +76,11 @@ def geturlfrompage(url, tree):
     links = tree.iterlinks()
     links_set = set([item[2] for item in links if item[0].tag == 'a'])
 
-    # alst = soup.select('a[href^="/"]')
-    p = urllib.parse.urlparse(url)              # Парсим полученную ссылку
-    r = urllib.robotparser.RobotFileParser()    # Парсинг robots.txt
+    p = urllib.parse.urlparse(url)  # Парсим полученную ссылку
+    r = urllib.robotparser.RobotFileParser()  # Парсинг robots.txt
     rurl = urllib.parse.urlunparse((p.scheme, p.netloc, 'robots.txt', '', '', ''))
     r.set_url(rurl)
-    r.read()                                    # Читаем и парсим robots.txt
-    # print(p.netloc)
+    r.read()  # Читаем и парсим robots.txt
     hrefs = set()
     for link in links_set:
         u = urllib.parse.urlparse(link)

@@ -4,19 +4,16 @@ import requests
 import gzip
 import datetime
 import urllib.parse
-# import urllib.robotparser
-# import re
 import parse
 import repository
 import queue
 import threading
 
+
 # Инициализация репозитория
 
 
 def reposytory_init():
-
-
     repository_dict = {
         'keyword': repository.DbKeywordRepository(),
         'sites': repository.DbSiteReposytory(),
@@ -50,6 +47,7 @@ class PageDowloader:
             if response.status_code == requests.codes.ok:
                 if response.headers['Content-Type'] == 'application/octet-stream':
                     self.page = gzip.decompress(response.content)
+                    self.headers = response.headers
                 else:
                     self.page = response.text
                     self.headers = response.headers
@@ -76,6 +74,7 @@ def findsitestorank(siteworker):
 
 def writerobotstodb(pagewoker, sites):
     """
+    :param pagewoker:
     :param sites: Список сайтов для обхода краулера
     Записываем для каждого сайта в pages ссылку на robots.txt
     """
@@ -104,6 +103,7 @@ def allpages(pagewoker):
 
 def writeurl(pagewoker, url, siteid):
     """
+    :param pagewoker:
     :param url: Ссылка для записи в БД
     :param siteid: ID сайта для которого записываем ссылку в БД
     :return:
@@ -115,6 +115,7 @@ def writeurl(pagewoker, url, siteid):
 
 def updatelastscandate(pagewoker, pageid):
     """
+    :param pagewoker:
     :param pageid:
     :return:
     """
@@ -126,7 +127,7 @@ def countstatforpage(personworker, keywordworker, tree):
     """
     :param personworker:
     :param keywordworker:
-    :param soup: HTML страницы которую анализируем на предмет сколько раз встречается ключевые слова.
+    :param tree: HTML страницы которую анализируем на предмет сколько раз встречается ключевые слова.
     :return: Словаь по персонам с ID персоны и статистика для проанализируемой странице
     """
     personslist = personworker.getpersons()
@@ -159,6 +160,7 @@ def writerank(personpagerankwoker, personid, pageid, rank):
 
 class DbThread(threading.Thread):
     """Класс описывает поток для запуска"""
+
     def __init__(self, repository_worker, work_queue):
         threading.Thread.__init__(self)
         self.repository_woker = repository_worker
@@ -175,8 +177,6 @@ def worker(repository_worker, pagesqueue):
     :param pagesqueue:
     :return:
     """
-    # pagesset, lastsiteid = None, None
-
     while True:
         item = pagesqueue.get()
         if item is None:
@@ -205,19 +205,16 @@ def worker(repository_worker, pagesqueue):
             updatelastscandate(repository_worker['pages'], item['ID'])
         elif u == 'sitemap':
             print('Получаем ссылки из sitemap и записываем в БД')
-            soup = BeautifulSoup(html, 'lxml')
+            only_loc = SoupStrainer('loc')
+            soup = BeautifulSoup(html, 'lxml', parse_only=only_loc)
             urlstowrite = parse.sitemapparse(soup)
             for url in urlstowrite:
                 writeurl(repository_worker['pages'], url, item['SiteID'])
                 updatelastscandate(repository_worker['pages'], item['ID'])
         else:  # Страница для анализа.
-            # if pagesset is None or lastsiteid != item['SiteID']:
-            #     print('Заполняем множество сайтов')
             pagesset = set(x['Url'] for x in repository_worker['pages'].getpagesbysiteid(item['SiteID']))
-            #    lastsiteid = item['SiteID']
-
             print('Pageset for {} -> {}'.format(item['Url'], len(pagesset)))
-            #Ограничить выборку только при необходимсти.
+            # Ограничить выборку только при необходимсти.
             tree = lxml.html.fromstring(html)
             urlsfrompage = parse.geturlfrompage(item['Url'], tree)
             urlsfrompage.difference_update(pagesset)
@@ -235,8 +232,7 @@ def worker(repository_worker, pagesqueue):
 
 
 def main():
-
-    num_worker_threads = 4
+    num_worker_threads = 5
 
     while True:
 
