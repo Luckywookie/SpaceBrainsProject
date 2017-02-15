@@ -173,11 +173,12 @@ def worker(repository_worker, pagesqueue):
     :param pagesqueue:
     :return:
     """
+    pagesset, lastsiteid = None, None
+
     while True:
         item = pagesqueue.get()
         if item is None:
             break
-        pagesset = {x['Url'] for x in allpages(repository_worker['pages'])}
         p = PageDowloader(item['Url'])
         p.get_page()
         html = p.page
@@ -206,9 +207,13 @@ def worker(repository_worker, pagesqueue):
                 writeurl(repository_worker['pages'], url, item['SiteID'])
                 updatelastscandate(repository_worker['pages'], item['ID'])
         else:  # Страница для анализа.
-            # only_a = SoupStrainer('a')
-            # soup = BeautifulSoup(html, 'lxml', parse_only=only_a)
-            # soup = BeautifulSoup(html, 'lxml')
+            if pagesset is None or lastsiteid != item['SiteID']:
+                print('Заполняем множество сайтов')
+                pagesset = set(x['Url'] for x in repository_worker['pages'].getpagesbysiteid(item['SiteID']))
+                lastsiteid = item['SiteID']
+
+            print('Pageset for {} -> {}'.format(item['Url'], len(pagesset)))
+            #Ограничить выборку только при необходимсти.
             tree = lxml.html.fromstring(html)
             urlsfrompage = parse.geturlfrompage(item['Url'], tree)
             urlsfrompage.difference_update(pagesset)

@@ -199,6 +199,10 @@ class PagesRepositoryWorker:
         result = [item for item in self.repository.getallpages()]
         return result
 
+    def getpagesbysiteid(self, siteid):
+        for item in self.repository.getpagesbysiteid(siteid):
+            yield item
+
     def getsiteidfrompages(self):
         result = [item for item in self.repository.getsiteidfrompages()]
         return result
@@ -225,6 +229,12 @@ class DbPageRepository(DbRepositoryConnect):
         self.cursor.execute(sql)
         result = self.cursor.fetchall()
         return result
+
+    def getpagesbysiteid(self, pageid):
+        sql = "select `Url` from `Pages` where `Pages`.`SiteID` = %s"
+        self.cursor.execute(sql, (pageid, ))
+        for row in self.cursor:
+            yield row
 
     def getsiteidfrompages(self):
         sql = "select distinct `siteid` from `Pages`"
