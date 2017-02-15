@@ -5,18 +5,17 @@ import re
 # import lxml.html
 
 
-def whatisurl(url):
+def whatisurl(url, headers):
     """
     :param url: Ссылка для анализа, куда ведет
     :return: 'robots' или 'sitemap' в зависимости от того на что указывает ссылка.
     """
-    parse = (urllib.parse.urlsplit(url))
-    if parse.path.endswith('robots.txt'):
+    parse = urllib.parse.urlsplit(url)
+    h = headers['Content-Type'].split(';')[0]
+    if re.search(r'robots.txt', parse.path) and h == 'text/plain':
         return 'robots'
-    elif parse.path.endswith('.xml') or parse.path.endswith('.xml.gz'):
-        print(url)
+    elif re.search(r'sitemap', parse.path) and h == 'application/xml':
         return 'sitemap'
-
 
 def readrobots(file):
     """

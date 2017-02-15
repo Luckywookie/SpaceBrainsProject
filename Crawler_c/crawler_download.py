@@ -39,6 +39,7 @@ class PageDowloader:
     """"""
     error = None
     page = None
+    headers = None
 
     def __init__(self, url):
         self.url = url
@@ -51,6 +52,7 @@ class PageDowloader:
                     self.page = gzip.decompress(response.content)
                 else:
                     self.page = response.text
+                    self.headers = response.headers
             else:
                 response.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -173,7 +175,7 @@ def worker(repository_worker, pagesqueue):
     :param pagesqueue:
     :return:
     """
-    pagesset, lastsiteid = None, None
+    # pagesset, lastsiteid = None, None
 
     while True:
         item = pagesqueue.get()
@@ -194,12 +196,14 @@ def worker(repository_worker, pagesqueue):
                 print(item)
                 continue
 
-        if (parse.whatisurl(item['Url'])) == 'robots':
+        u = parse.whatisurl(item['Url'], p.headers)
+
+        if u == 'robots':
             print('Записываем ссылку на sitemap в БД')
             sitemapurl = parse.readrobots(html)
             writeurl(repository_worker['pages'], sitemapurl, item['SiteID'])
             updatelastscandate(repository_worker['pages'], item['ID'])
-        elif (parse.whatisurl(item['Url'])) == 'sitemap':
+        elif u == 'sitemap':
             print('Получаем ссылки из sitemap и записываем в БД')
             soup = BeautifulSoup(html, 'lxml')
             urlstowrite = parse.sitemapparse(soup)
@@ -207,10 +211,10 @@ def worker(repository_worker, pagesqueue):
                 writeurl(repository_worker['pages'], url, item['SiteID'])
                 updatelastscandate(repository_worker['pages'], item['ID'])
         else:  # Страница для анализа.
-            if pagesset is None or lastsiteid != item['SiteID']:
-                print('Заполняем множество сайтов')
-                pagesset = set(x['Url'] for x in repository_worker['pages'].getpagesbysiteid(item['SiteID']))
-                lastsiteid = item['SiteID']
+            # if pagesset is None or lastsiteid != item['SiteID']:
+            #     print('Заполняем множество сайтов')
+            pagesset = set(x['Url'] for x in repository_worker['pages'].getpagesbysiteid(item['SiteID']))
+            #    lastsiteid = item['SiteID']
 
             print('Pageset for {} -> {}'.format(item['Url'], len(pagesset)))
             #Ограничить выборку только при необходимсти.
