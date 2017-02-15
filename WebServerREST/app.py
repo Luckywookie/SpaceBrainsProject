@@ -6,21 +6,18 @@ from flask_restful import Api
 from flask_jwt import JWT
 from datetime import timedelta
 
-<<<<<<< Updated upstream
 from security import authenticate, identity, Login
 from resources.user import UserRegister, UserListView, User,\
     UserRestorePassword, UserChangePassword, UserStatus
 from resources.site import Site, SiteList, SiteCreate
 from resources.person import Person, PersonList, PersonCreate
 from resources.stats import Pages as Stats, StatList, Rank, RankList
-=======
 from security import authenticate, identity
 from resources.user import UserRegister
 
 from resources.site import Site, SiteList
 from resources.person import Person, PersonList
 from resources.stats import Pages as Stats, StatList, Rank, RankList
->>>>>>> Stashed changes
 from models.pages import PageModel
 from resources.keyword import Keyword, KeywordList, KeywordCreate
 
@@ -33,7 +30,6 @@ app.config['JWT_AUTH_URL_RULE'] = '/auth_old'
 app.config['JWT_EXPIRATION_DELTA'] = timedelta(seconds=7200)
 app.secret_key = ''
 api = Api(app)
-
 
 @app.before_first_request
 def create_tables():
