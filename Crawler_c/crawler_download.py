@@ -212,11 +212,11 @@ def worker(repository_worker, pagesqueue):
                 writeurl(repository_worker['pages'], url, item['SiteID'])
                 updatelastscandate(repository_worker['pages'], item['ID'])
         else:  # Страница для анализа.
-            pagesset = set(x['Url'] for x in repository_worker['pages'].getpagesbysiteid(item['SiteID']))
-            print('Pageset for {} -> {}'.format(item['Url'], len(pagesset)))
             # Ограничить выборку только при необходимсти.
             tree = lxml.html.fromstring(html)
             urlsfrompage = parse.geturlfrompage(item['Url'], tree)
+            pagesset = set(x['Url'] for x in repository_worker['pages'].getpagesbysiteid(item['SiteID']))
+            print('Pageset for {} -> {}'.format(item['Url'], len(pagesset)))
             urlsfrompage.difference_update(pagesset)
             for url in urlsfrompage:
                 writeurl(repository_worker['pages'], url, item['SiteID'])
