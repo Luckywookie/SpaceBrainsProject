@@ -14,10 +14,6 @@ from resources.person import Person, PersonList, PersonCreate
 from resources.stats import Pages as Stats, StatList, Rank, RankList
 from security import authenticate, identity
 from resources.user import UserRegister
-
-from resources.site import Site, SiteList
-from resources.person import Person, PersonList
-from resources.stats import Pages as Stats, StatList, Rank, RankList
 from models.pages import PageModel
 from resources.keyword import Keyword, KeywordList, KeywordCreate
 
